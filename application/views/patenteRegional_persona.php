@@ -1,8 +1,11 @@
+<?php
+    $titulo_datos = 'MODIFICACION DE DATOS';
+?>
 <table>
 <tr>
 <td>
 	<div id="datos_personales">
-		<h3>ADICI&Oacute;N / MODIFICACI&Oacute;N</h3>
+		<h3><?php echo $titulo_datos; ?></h3>
 		<label for="numero_identidad">Documento de Identidad:</label>
 		<select name="documento_identidad" id="documento_identidad" style="display: inline;">
 			<option value="">-Tipo-</option>
