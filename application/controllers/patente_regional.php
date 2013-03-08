@@ -169,7 +169,7 @@ class Patente_regional extends CI_Controller {
         echo json_encode($personas);
     }
     
-    function patentes_encontrarPersona($idPersona){
+    function patentes_encontrarPersona($idPersona=0){
         //$idPersona=$this->input->post('id');
         $enviarDatos['persona'] = $this->modelo_patente_regional->persona($idPersona);
         $this->load->view('patenteRegional_persona.php', $enviarDatos);
