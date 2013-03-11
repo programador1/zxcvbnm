@@ -195,7 +195,13 @@ if (!empty($persona)) {
             height: 10,
             cache: true,
             select_all_text: "",
-            complete_text: "Seleccione los minerales explotados"
+            complete_text: "Seleccione los minerales explotados",
+            onremove: function() {
+                jQuery("input.maininput").removeAttr("size");
+            },
+            onselect: function() {
+                jQuery("input.maininput").attr("size", "1");
+            }
         });
     });
 </script>

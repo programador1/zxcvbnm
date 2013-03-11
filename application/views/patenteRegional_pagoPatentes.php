@@ -72,6 +72,8 @@
             modal: true,
             buttons: {
                 "Imprimir Formulario": function() {
+                    jQuery("#form_datos").attr("action", ".");
+                    jQuery("#form_datos").submit();
                     jQuery(this).dialog("close");
                 },
                 Cancelar: function() {
@@ -79,7 +81,7 @@
                 }
             },
             close: function() {
-                allFields.val("").removeClass("ui-state-error");
+                jQuery("#form_datos :input").val("").removeClass("ui-state-error");
             }
         });
 
@@ -105,12 +107,14 @@
             complete_text: "Escriba el nombre o apellidos de la persona",
             onremove: function() {
                 jQuery("div#datos").html("");
+                jQuery("input.maininput").removeAttr("size");
                 jQuery("input.maininput").removeAttr("disabled");
                 jQuery("#nueva_persona").show();
             },
             onselect: function() {
                 var id_persona = jQuery('#buscar_personas').val();
                 jQuery("#nueva_persona").hide();
+                jQuery("input.maininput").attr("size", "1");
                 jQuery("input.maininput").attr("disabled", "disabled");
                 jQuery.post('<?php echo site_url("patente_regional/patentes_encontrarPersona"); ?>' + '/' + id_persona, {}, function(datos) {
                     jQuery("div#datos").html(datos);
