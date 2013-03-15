@@ -71,16 +71,13 @@
             height: 600,
             modal: true,
             buttons: {
-                "Imprimir Formulario": function() {
-                    jQuery("#form_datos").attr("action", ".");
-                    jQuery("#form_datos").submit();
-                    jQuery(this).dialog("close");
-                },
-                Cancelar: function() {
+                "Cerrar Formulario": function() {
                     jQuery(this).dialog("close");
                 }
             },
             close: function() {
+                jQuery("a.closebutton").click();
+                jQuery("div#datos").html("");
                 jQuery("#form_datos :input").val("").removeClass("ui-state-error");
             }
         });
