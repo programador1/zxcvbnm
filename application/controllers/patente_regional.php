@@ -84,7 +84,7 @@ class Patente_regional extends CI_Controller {
     }    
     
 //=============================================================================================================
-// Funciones para generar la BOLETA DE PAGO DE PATENTES
+// Funciones para emitir la BOLETA DE PAGO DE PATENTES
 //=============================================================================================================
     function patentes_controlarPagoDePatentes($id_concesion_minera) {
         //-- Saca los datos de una concesion
@@ -97,10 +97,14 @@ class Patente_regional extends CI_Controller {
         $gestionVigente = $datosImporte->gestion;
 
         //-- recupera datos que se usaran para controlar
-        if (strtolower($datosConcesion->tipo_concesion) === 'cuadricula')
+        if (strtolower($datosConcesion->tipo_concesion) === 'cuadricula'){
             $gestionResolucion = substr($datosConcesion->fecha_resolucion, 0, 4);
-        else
+            $fechaResolucion = $datosConcesion->fecha_resolucion;
+        }else{
             $gestionResolucion = substr($datosConcesion->fecha_inscripcion, 0, 4);
+            $fechaResolucion = $datosConcesion->fecha_inscripcion;
+        }
+        
         ///////////////////////////////////////////////////////////////////////
         //-- 1. Controla si una concesion tiene todas sus patentes canceladas
         ///////////////////////////////////////////////////////////////////////
@@ -142,7 +146,7 @@ class Patente_regional extends CI_Controller {
             //--2. Controla si ya REALIZO EL PAGO de la gestion actual y la siguiente
             $pagosAdelantados = 5; // determina el numero de pagos que puede realizar            
             $this->load->library('table');
-            $this->table->set_heading('GESTION', 'EXTENCION ASIGNADA', 'PATENTE ' . $gestionVigente, 'TIPO', 'TOTAL','OTRA INFORMACION', 'ESTADO');
+            $this->table->set_heading('GESTION', 'EXTENCION ASIGNADA', 'PATENTE ' . $gestionVigente, 'TIPO', 'TOTAL BS.','OTRA INFORMACION', 'ESTADO');
             
             for ($i = 0; $i <= $pagosAdelantados; $i++) {
                 $gestion = $gestionVigente + $i;
@@ -174,9 +178,9 @@ class Patente_regional extends CI_Controller {
                             $tipoImporte2 = $datosSimpleProgresivo['tipoImporte'];
                             $importeCalculado2 = $datosSimpleProgresivo['importeCalculado'];
                             if ($importeCancelado >= $importeCalculado2)
-                                $this->table->add_row(   $realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe2, $tipoImporte2, $importeCancelado,' Fecha de pago : '.$fechaPago, 'Registrado en el sistema');
+                                $this->table->add_row(   $realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe2, $tipoImporte2, $importeCancelado,' Fecha de pago : '.fecha_literal($fechaPago,5), 'Registrado en el sistema');
                             else
-                                $this->table->add_row($realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, ($importeCalculado - $importeCancelado) , 'Cancelado : '.$importeCancelado.'<br />Fecha pago : '.$fechaPago ,'<button class="emitir_formulario">Emitir Reintegro</button>');
+                                $this->table->add_row($realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, ($importeCalculado - $importeCancelado) , 'Cancelado : '.$importeCancelado.'<br />Fecha pago : '.fecha_literal($fechaPago,5) ,'<button class="emitir_formulario">Emitir Reintegro</button>');
                             break;
                         case 'EMITIDO':
                                 $this->table->add_row($gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, $importeCalculado, '','<button class="emitir_formulario">Emitir otro formulario</button>');
@@ -188,7 +192,9 @@ class Patente_regional extends CI_Controller {
             }
             $enviarDatos['tablaPagos'] = $this->table->generate();
             //$enviarDatos['personas'] = json_encode($this->modelo_patente_regional->personas());
-            //$enviarDatos['concesion'] = $datosConcesion;
+            $enviarDatos['concesion'] = $datosConcesion;
+            $enviarDatos['fechaResolucion'] = fecha_literal($fechaResolucion,'4');
+            
             $datos['output'] = boton('volver').$this->load->view('patenteRegional_pagoPatentes.php', $enviarDatos, true);
             $this->_vista_principal($datos);
         }

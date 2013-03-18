@@ -503,6 +503,7 @@ body{
 				
 				td {
 					border-right: 1px solid #959595;
+                                        border-left: 1px solid #959595;
 					border-bottom: 1px solid #959595;
 					background: #fff;
 					padding: 6px 6px 6px 12px;
@@ -735,3 +736,14 @@ width:266px;}
 .clearboth{
 	clear:both;
 	}
+        
+ /* garmaser formatear una tabla*/       
+#formatearTabla table, #formatearTabla caption, #formatearTabla tbody, #formatearTabla tfoot, #formatearTabla thead, #formatearTabla tr, #formatearTabla th, #formatearTabla td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    /*font-size: 100%;*/
+    vertical-align: baseline;
+    background: transparent;
+}

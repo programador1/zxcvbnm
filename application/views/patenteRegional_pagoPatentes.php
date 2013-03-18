@@ -1,7 +1,7 @@
 <div id="datos_adicionales" title="Ingrese los Datos Adicionales">
     <div class="msg_error">Ingrese todos los datos...</div>
     <div>
-        <table>
+        <table id="formatearTabla">
             <tr>
                 <td colspan="2"><h2>B&uacute;squeda</h2></td>
             </tr>
@@ -24,7 +24,13 @@
 </div>
 
 <div id="tabla_listado" class="ui-widget">
-    <?php echo $tablaPagos; // muestra los datos de la tabla?>  
+    <?php 
+    $html = '<br /><b>Concesion : </b>'.$concesion->nombre_concesion;    
+    $html.= '<br /><b>Nro Inscripci&oacute;n : </b>'.$concesion->numero_formulario;
+    $html.= '<br /><b>Fecha Resoluci&oacute;n : </b>'.$fechaResolucion.'<br /><br />';
+    echo $html;
+    echo $tablaPagos; // muestra los datos de la tabla
+    ?>  
 </div>
 
 <script type="text/javascript">

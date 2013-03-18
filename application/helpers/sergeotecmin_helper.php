@@ -67,11 +67,11 @@ function alinear($valor, $alinear = 'izquierda', $negrita = '', $tamano = '') {
 function fecha_literal($Fecha, $Formato = 2) {
     $dias = array(1 => 'Lunes', 2 => 'Martes', 3 => 'Mièrcoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sàbado', 7 => 'Domingo');
     $meses = array(1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio',
-        7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre');
+        7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre');    
     $aux = date_parse($Fecha);
     switch ($Formato) {
         case 1:  // 04/10/10
-            return date('d/m/y', $Fecha);
+            return date('d/m/y', strtotime($Fecha));
         case 2:  //04/oct/10
             return sprintf('%02d/%s/%02d', $aux['day'], substr($meses[$aux['month']], 0, 3), $aux['year'] % 100);
         case 3:   //octubre 4, 2010
@@ -79,9 +79,9 @@ function fecha_literal($Fecha, $Formato = 2) {
         case 4:   // 4 de octubre de 2010
             return $aux['day'] . ' de ' . $meses[$aux['month']] . ' de ' . $aux['year'];
         case 5:
-            return date('d/m/Y', $Fecha);
+            return date('d/m/Y',  strtotime($Fecha));
         default:
-            return date('d/m/Y', $Fecha);
+            return date('d/m/Y', strtotime($Fecha));
     }
 }
 

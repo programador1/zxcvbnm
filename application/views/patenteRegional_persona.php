@@ -6,11 +6,11 @@ if (!empty($persona)) {
     $titulo = "ADICION - Ingrese los datos correctos";
 }
 ?>
-<table>
+<h2 style="padding-top: 10px;"><?php echo $titulo; ?></h2>
+<table style="width: 100%;">   
     <tr>
-        <td colspan="2">
-            <h3><?php echo $titulo; ?></h3>
-        </td>
+        <th> <center> Datos de solicitante </center></th>
+        <th> <center> Datos de la concesi&oacute;n </center></th>
     </tr>
     <tr>
         <td>
