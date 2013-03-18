@@ -51,10 +51,38 @@ class Patente_regional extends CI_Controller {
             $crud->unset_operations();
 
             $output = $crud->render();
+            $jQuery = '  <script type="text/javascript">
+                            jQuery(function() {
+                                  jQuery( "#divResolucion" ).dialog({
+                                        autoOpen: false,
+                                        width: 500,
+                                        height: 400,
+                                        modal: true,
+                                        buttons: {                                                
+                                                Cancelar: function() {
+                                                        jQuery( this ).dialog( "close" );
+                                                }
+                                        },
+                                        close: function() {
+                                                allFields.val( "" ).removeClass( "ui-state-error" );
+                                        }
+                                });                                
+                            });
+                        </script>
+                    ';
+            $output->output = '<div id="divResolucion" title="ACTUALIZAR RESOLUCION"></div>' . $output->output. $jQuery;
             $this->_vista_principal($output);
         }
     }
-
+//=============================================================================================================
+// Funciones para insertar Nº RESOLUCION y FECHA DE RESOLUCION
+//=============================================================================================================
+    function resolucion_recuperarDatos($id_concesion_minera=0){
+        $this->db->where('id_concesion_minera', $id_concesion_minera);
+        $enviarDatos['concesion'] = $this->db->get('concesion_minera')->row();
+        $this->load->view('vista_modificarResolucion.php', $enviarDatos);
+    }    
+    
 //=============================================================================================================
 // Funciones para generar la BOLETA DE PAGO DE PATENTES
 //=============================================================================================================
@@ -160,7 +188,8 @@ class Patente_regional extends CI_Controller {
             }
             $enviarDatos['tablaPagos'] = $this->table->generate();
             //$enviarDatos['personas'] = json_encode($this->modelo_patente_regional->personas());
-            $datos['output'] = $this->load->view('patenteRegional_pagoPatentes.php', $enviarDatos, true);
+            //$enviarDatos['concesion'] = $datosConcesion;
+            $datos['output'] = boton('volver').$this->load->view('patenteRegional_pagoPatentes.php', $enviarDatos, true);
             $this->_vista_principal($datos);
         }
     }
@@ -220,60 +249,6 @@ class Patente_regional extends CI_Controller {
         $resultado = array('importe' => $importe, 'tipoImporte' => $tipoImporte, 'importeCalculado' => $importeCalculado);
 
         return $resultado;
-    }
-
-    function patentes_datosConcesion() {
-        //-- Saca el nombre de concesion
-        if ($datosConcesion->nombre_empresa == NULL OR $datosConcesion->nombre_empresa == '')
-            $nombreConcesionario = $datosConcesion->nombre_persona . ' ' . $datosConcesion->paterno_persona . ' ' . $datosConcesion->materno_persona;
-        else
-            $nombreConcesionario = $datosConcesion->nombre_empresa;
-
-        // prepara datos para enviar al formulario
-        $datosFormulario['cantidadAsignada'] = $datosConcesion->cantidad_asignada;
-        $datosFormulario['nombreConcesionario'] = $nombreConcesionario;
-        $datosFormulario['nombreConcesion'] = $datosConcesion->nombre_concesion;
-        $datosFormulario['numeroInscripcion'] = $datosConcesion->numero_formulario;
-        $datosFormulario['padronNacional'] = $datosConcesion->padron_nacional;
-        $datosFormulario['departamento'] = $datosConcesion->departamento;
-        $datosFormulario['provincia'] = $datosConcesion->provincia;
-        $datosFormulario['canton'] = $datosConcesion->canton;
-        $datosFormulario['codigo_municipio'] = $datosConcesion->codigo_municipio;
-        $datosFormulario['tipoConcesion'] = $datosConcesion->tipo_concesion;
-        $datosFormulario['gestion'] = $datosImporte->gestion;
-        $datosFormulario['unidad'] = $datosConcesion->unidad;
-        $datosFormulario['progresivo'] = $progresivo;
-        $datosFormulario['importe'] = $importe;
-        $datosFormulario['importeTotal'] = $importe * $cantidadAsignada;
-        $datosFormulario['nit'] = '---';
-        $datosFormulario['telefono'] = '---';
-        $datosFormulario['resolucion'] = $datosConcesion->numero_resolucion . ' de fecha ' . fecha_literal($datosConcesion->fecha_resolucion, 4);
-        $datosFormulario['canton2'] = $datosConcesion->CANTON2;
-
-        $datosInsertar = array('id_concesion_minera' => $id_concesion_minera,
-            'importe_gestion' => $datosImporte->gestion,
-            'importe' => $datosFormulario['importeTotal'],
-            'id_importe_patente' => $datosImporte->id_importe_patente,
-            'estado_formulario_pago_patente' => 'EMITIDO',
-            'fecha_formulario_pago_patente' => date('Y-m-d H:i:s')
-        );
-        $this->db->insert('patentes', $datosInsertar); //inserta los datos en la tabla patentes para generar numero de formulario
-
-        $datosFormulario['nroFormularioPagoPatente'] = 'FP' . $id_patentes = $this->db->insert_id(); //recupera el id_patente ingresado
-        $datosFormulario['fechaEmision'] = date('d/m/Y');
-        $datosFormulario['codigoBarras'] = $datosFormulario['nroFormularioPagoPatente'];
-
-        //-- Genera codigo de barras
-        //$this->load->helper(array('barcode39'));
-        //$datosFormulario['codigoBarras']=barcode39_2($datosFormulario['nroFormularioPagoPatente']);
-        // GENERA PDF
-        //$this->load->helper(array('dompdf', 'file'));
-        // page info here, db calls, etc.
-        //$html = $this->load->view('formulario_pago_patentes.php', $datosFormulario, true);
-        //pdf_create($html, 'filename');
-
-        $datos['output'] = $this->load->view('formulario_pago_patentes.php', $datosFormulario, true);
-        $this->_vista_principal($datos);
     }
 
     function patentes_imprimirFormularioDePagoDePatentes($id_concesion_minera) {
@@ -454,9 +429,27 @@ class Patente_regional extends CI_Controller {
 
     function _linkImprimir($value, $row) {
         $html = '';
+        //verifica si una concesion tiene resolucion
         if (empty($row->fecha_resolucion) && strtolower($row->tipo_concesion) === 'cuadricula') {
-            $html = '<div class="message error">No se puede emitir el formulario:<p><strong>No tiene FECHA DE RESOLUCION </strong></p></div>';
+            $jQuery = '  <script type="text/javascript">
+                            
+                                jQuery("#link-' . $row->id_concesion_minera . '").button().click(function(){                                                                                                                                                
+                                                jQuery.post(
+                                                    "'.site_url("patente_regional/resolucion_recuperarDatos/$row->id_concesion_minera").'", 
+                                                    {}, 
+                                                    function(datos){
+                                                        jQuery("div#divResolucion").html(datos);
+                                                       jQuery( "#divResolucion" ).dialog( "open" );
+                                                    });
+                                               });
+                        </script>
+                    ';
+            $titulo = 'NO TIENE FECHA DE RESOLUCION';
+            $error = 'No es posible emitir el formulario de pago de patentes';
+            $botonRegistrar = '<br /><button class="button" id="link-' . $row->id_concesion_minera . '">Registrar resolucion</button>';
+            $html.= mensaje_error($titulo, $error) . $botonRegistrar . $jQuery;
         } elseif (strtolower($row->estado_concesion) == 'vigente') {
+            // si es vigente permite imprimir
             $html = '<a href="' . site_url('patente_regional/patentes_formularioDePagoDePatentes/' . $row->id_concesion_minera) . ' ">
                         <center><img src="' . base_url('estilo/images/imprimir.png') . '" title="Imprimir formulario de pago de patentes" alt="Imprimir formulario pago de patentes"/>
                         </center>
