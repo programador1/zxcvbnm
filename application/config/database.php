@@ -49,10 +49,10 @@ $active_group = 'default';
 $active_record = TRUE;
 
 //$db['default']['hostname'] = '100.100.100.9';
-$db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'postgres';
 //$db['default']['password'] = 'DIRECCION13GARMASER';
+$db['default']['hostname'] = 'localhost';
 $db['default']['password'] = 'garmaser';
+$db['default']['username'] = 'postgres';
 $db['default']['database'] = 'siacombo';
 $db['default']['dbdriver'] = 'postgre';
 $db['default']['dbprefix'] = '';

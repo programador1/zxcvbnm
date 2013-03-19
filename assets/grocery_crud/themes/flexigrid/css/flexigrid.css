@@ -468,7 +468,8 @@ div.colCopy {
 .flexigrid div.bDiv td {
 	border-bottom:1px solid #fff;
 	vertical-align:top;
-	white-space:nowrap;
+	/*garmaser barra inferior
+        white-space:nowrap;*/
 }
 .flexigrid div.hDiv th div {
 	overflow:hidden;

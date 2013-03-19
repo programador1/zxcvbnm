@@ -252,7 +252,7 @@ function numero_letra($num, $fem = false, $dec = true) {
                 $t .= ' mil';
             }
         } elseif ($num == 1) {
-            $t .= ' ' . $matsub[$sub] . '?n';
+            $t .= ' ' . $matsub[$sub] . 'on';
         } elseif ($num > 1) {
             $t .= ' ' . $matsub[$sub] . 'ones';
         }
@@ -270,7 +270,7 @@ function numero_letra($num, $fem = false, $dec = true) {
     //Zi hack --> return ucfirst($tex);
     if (empty($numeroFloat[1]))
         $numeroFloat[1] = 0;
-    $end_num = ucfirst($tex) . ' ' . $numeroFloat[1] . '/100 Bolivianos';
+    $end_num = ucfirst($tex) . ' ' . $numeroFloat[1] . '/100 bolivianos';
     return $end_num;
 }
 

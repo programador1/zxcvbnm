@@ -747,3 +747,14 @@ width:266px;}
     vertical-align: baseline;
     background: transparent;
 }
+
+td.status label.error{
+  background:url("../images/24_x_false.png") no-repeat 0px 0px;
+  padding-left: 24px;
+  padding-bottom: 2px;
+  font-weight: bold;
+  color: #FFC244;
+}
+td.status label.checked {
+  background:url("../images/24_tick.png") no-repeat 0px 0px;
+}

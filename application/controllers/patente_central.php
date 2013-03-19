@@ -148,7 +148,7 @@ class Patente_central extends CI_Controller {
     }
 
     function _concesionario($value, $row) {
-        $html = '';
+        /*$html = '';
         if ($row->nombre_empresa == NULL OR $row->nombre_empresa == '') {
             $html = 'Tipo : <b>Personal</b><br />';
             $html.='Nombre : <b>' . $row->nombre_persona . '</b><br />';
@@ -158,8 +158,8 @@ class Patente_central extends CI_Controller {
         } else {
             $html = 'Tipo : <b>Empresa</b><br />';
             $html.='Nombre : <b>' . $row->nombre_empresa . '</b>';
-        }
-        return $html;
+        }*/
+        return $row->concesionario;
     }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

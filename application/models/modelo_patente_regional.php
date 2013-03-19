@@ -5,7 +5,22 @@ class modelo_patente_regional extends CI_Model {
     function __construct() {
         parent::__construct();
     }
-
+    //-- Recupera datos de la concesion mediante el id de patentes
+    function patenteYconcesion_minera($id_patente) {
+        $sql = "SELECT conmin.*, pat.*
+                FROM patentes AS pat
+                        INNER JOIN vista_concesion_minera AS conmin ON(pat.id_concesion_minera = conmin.id_concesion_minera)
+                WHERE pat.id_patentes = '$id_patente'
+        ";
+        $consulta = $this->db->query($sql);
+        //echo $sql; exit();
+        if ($consulta->num_rows() > 0)
+            return $consulta->row();
+        else
+            return FALSE;
+    }
+    
+    
     //-- Perminite calcular el monto total que cancelo por una Gestion (si realizo mas de un pago en una getion, suma todos sus pagos)
     function pago_patentesPorGestion($id_concesion_minera, $gestion) {
         $sql = "SELECT importe_gestion, SUM(importe) AS importe_cancelado, max(fecha_pago::date) AS fecha_pago

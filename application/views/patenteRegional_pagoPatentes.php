@@ -1,13 +1,13 @@
-<div id="datos_adicionales" title="Ingrese los Datos Adicionales">
-    <div class="msg_error">Ingrese todos los datos...</div>
+<div id="datos_adicionales" title="Emisi&oacute;n del Formulario de Pago de Patentes Mineras">
+    <div class="msg_error">Debe asegurarse de seleccionar e ingresar los datos correctos...</div>
     <div>
         <table id="formatearTabla">
             <tr>
-                <td colspan="2"><h2>B&uacute;squeda</h2></td>
+                <th colspan="2">B&uacute;squeda</th>
             </tr>
             <tr>
                 <td>
-                    <label for="buscar_personas">Buscar Nombre:</label>
+                    <label for="buscar_personas">Buscar por C.I., Nombres o Apellidos del Concesionario:</label>
                     <select id="buscar_personas" name="buscar_personas">
                     </select>
                 </td>
@@ -17,7 +17,9 @@
             </tr>
         </table>        
     </div>
-    <form id="form_datos">
+    <form id="form_datos" method="POST" action="<?php echo site_url("patente_regional/patentes_guardarDatos"); ?>">
+        <input type='hidden' name='gestion' id='gestion' value=''>
+        <input type='hidden' name='importe' id='importe' value=''>
         <div id="datos">
         </div>
     </form>
@@ -26,55 +28,21 @@
 <div id="tabla_listado" class="ui-widget">
     <?php 
     $html = '<br /><b>Concesion : </b>'.$concesion->nombre_concesion;    
+    $html.= '<br /><b>Concesionario : </b>'.$concesion->concesionario;
     $html.= '<br /><b>Nro Inscripci&oacute;n : </b>'.$concesion->numero_formulario;
     $html.= '<br /><b>Fecha Resoluci&oacute;n : </b>'.$fechaResolucion.'<br /><br />';
     echo $html;
     echo $tablaPagos; // muestra los datos de la tabla
-    ?>  
+    ?>    
 </div>
 
 <script type="text/javascript">
-    jQuery(function() {
-        var name = jQuery("#name"),
-                email = jQuery("#email"),
-                password = jQuery("#password"),
-                allFields = jQuery([]).add(name).add(email).add(password),
-                tips = jQuery(".msg_error");
-
-        function updateTips(t) {
-            tips
-                    .text(t)
-                    .addClass("ui-state-highlight");
-            setTimeout(function() {
-                tips.removeClass("ui-state-highlight", 1500);
-            }, 500);
-        }
-
-        function checkLength(o, n, min, max) {
-            if (o.val().length > max || o.val().length < min) {
-                o.addClass("ui-state-error");
-                updateTips("Length of " + n + " must be between " +
-                        min + " and " + max + ".");
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        function checkRegexp(o, regexp, n) {
-            if (!(regexp.test(o.val()))) {
-                o.addClass("ui-state-error");
-                updateTips(n);
-                return false;
-            } else {
-                return true;
-            }
-        }
-
+    jQuery(document).ready(function() {
         jQuery("#datos_adicionales").dialog({
             autoOpen: false,
-            width: 600,
+            width: 850,
             height: 600,
+            
             modal: true,
             buttons: {
                 "Cerrar Formulario": function() {
@@ -87,21 +55,18 @@
                 jQuery("#form_datos :input").val("").removeClass("ui-state-error");
             }
         });
-
         jQuery(".emitir_formulario")
                 .button()
-                .click(function() {
+                .click(function(e) {
+                jQuery("#gestion").attr('value',e.target.id);
+                jQuery("#importe").attr('value',e.target.name);
             jQuery("#datos_adicionales").dialog("open");
         });
-    });
-
-    jQuery(document).ready(function() {
         jQuery("#buscar_personas").fcbkcomplete({
             json_url: '<?php echo site_url("patente_regional/patentes_persona"); ?>',
             addontab: true,
             maxitems: 1,
             maxshownitems: 30,
-            delay: 1000,
             input_min_size: 0,
             width: 400,
             height: 15,

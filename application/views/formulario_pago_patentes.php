@@ -5,10 +5,10 @@
         <?php if (!empty($codigoBarras)) { ?>
             <script type="text/javascript" src="<?php echo base_url() ?>estilo/js/jquery.js"></script>
             <script type="text/javascript"> 
-                var PAGINA = "http://www.google.com/";
+                var PAGINA = "<?php echo site_url('patente_regional/patentes_controlarPagoDePatentes/'.$this->session->userdata('id_concesion_minera'));?>";
                 function redirigir() { 
                     document.location=PAGINA; 
-                    alert ('se esta redirigiendo la pagina a: ' + PAGINA);
+                    //alert ('se esta redirigiendo la pagina a: ' + PAGINA);
                 }
                 function imprSelec(div) {
                     var formulario=document.getElementById(div);
@@ -21,12 +21,12 @@
                                     
                 }
                 function imprimirPagina() {
-                    if (confirm("Realmente desea imprimir este Formulario?")) {
+                    //if (confirm("Realmente desea imprimir este Formulario?")) {
                         imprSelec('Imprimir');
                                             
-                        //redirigir();
-                    }
-                    window.history.back();
+                        redirigir();
+                    //}
+                    //window.history.back();
                 }
             </script>
             <script type="text/javascript" src="<?php echo base_url() ?>estilo/js/jquery-barcode-2.0.2.min.js"></script>
@@ -63,6 +63,11 @@
                     body table tr td{ font-family: Arial;
                                       font-size: 11px;
                     }
+                    .textoNormal {
+                        font-family: Arial;
+                        font-size: 11px;
+                        font-weight: normal;
+                    }
                     .titulo{	
                         font-size: 14px;
                         font-weight: bold;
@@ -94,16 +99,24 @@
                     }
                     .divImprimir{                        
                         width: 700px; 
-                        padding: 5px;
-                        padding-top: 60px 
+                        padding: 5px;                         
+                    }
+                    table#montos, table#montos tr, table#montos td{
+                        border: none;
+                        padding: 0px;
+                        margin: 0px;
+                        border-collapse: collapse;
+                    }
+                    table#montos td{
+                        border: 1px solid;
                     }
                 </style>
-                
-                <table width="100%" border="0">
-                    <tr height="30px">	<td class="subtitulo" colspan="4">DATOS DEL CONCESIONARIO: </td></tr>
-                    <tr><td class="txtNegrita" width="100px"> Nombre :</td>		<td colspan="3"> <?php echo $nombreConcesionario; ?></td></tr>
-                    <tr><td class="txtNegrita"> Nro Nit :</td>	 	<td><?php //echo $nit; ?> </td>
-                        <td class="txtNegrita"> Tel&eacute;fono :</td>		<td><?php //echo $telefono; ?>	</td>
+                <div style='height: 500px;'>
+                <table width="100%" border="0" style='padding-top: 100px;'>
+                    <tr height="30px">	<td class="subtitulo" colspan="3">DATOS DEL CONCESIONARIO</td>  <td rowspan='3' align='center'> <div id="codigo_barras" style='width:100px; text-align: center;'> </div> </td> </tr>
+                    <tr><td class="txtNegrita" width="100px"> Nombre :</td>		<td colspan="2"> <?php echo $nombreConcesionario; ?></td> </tr>
+                    <tr><td class="txtNegrita"> Nro Nit :</td>	 	<td><?php echo $nit; ?> </td>
+                        <td class="txtNegrita"> Tel&eacute;fono : <?php echo $telefono; ?>	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                     </tr>
                     <tr height="30px">	<td class="subtitulo" colspan="4">DATOS DE LA CONCESI&Oacute;N MINERA </td>	</tr>
                     <tr height="30px"><td class="txtNegrita" width="100px"> Nombre : </td> 	<td colspan="3"><?php echo $nombreConcesion; ?> </td>	</tr>
@@ -114,36 +127,39 @@
                         <td class="txtNegrita"> Provincia : </td>                    <td><?php echo $provincia; ?></td>
                     </tr>
                     <tr><td class="txtNegrita"> Resoluci&oacute;n : </td> <td><?php echo $resolucion; ?></td>
-                        <td class="txtNegrita"> Cant&oacute;n : </td>			<td><?php echo $canton2; ?></td>
+                        <td class="txtNegrita"> Cant&oacute;n : </td>			<td><?php echo $canton; ?></td>
                     </tr>
                                                
                     <tr>  <td class="txtNegrita"> C&oacute;digo de Municipio : </td> 	<td><?php echo $codigo_municipio; ?></td>
-                        <td class="txtNegrita"> Municipio : </td>			<td><?php echo $canton; ?></td>                  
+                        <td class="txtNegrita">  </td>			<td> </td>                  
                     </tr>
-<!--                    <tr>    <td class="txtNegrita"> Minerales explotados : </td> 	<td colspan="3"> PLATA, PLOMO, ZING <br />(La explotacion de minerales definida se considera una declaracion jurada) </td> </tr>-->
+                    <tr>    <td class="txtNegrita"> Minerales explotados : </td> <td colspan="3" style="border: 1px solid; padding-left: 5px;"> <?php echo $mineral; ?> <br />(La informaci&oacute;n proporcionada sobre la exploracion minera se considera como declaracion jurada) </td> </tr>
+                    <tr height="30px">	<td class="subtitulo" colspan="4" >DATOS DE PAGO DE LA PATENTE MINERA <span class="textoNormal">(Formulario valido hasta el <?php echo $fechaLimite;?>)</span></td>	</tr>
                 </table>
-                <table width="100%" border="0">
-                    <tr height="30px">	<td class="subtitulo" colspan="4" >DATOS DE PAGO DE LA PATENTE MINERA: <?php if ($progresivo) echo ' <b>(PAGO PROGRESIVO)</b>'; ?></td>	</tr>
+                <table width="100%" id="montos">                    
                     <tr class="tblEncabezado"> 
-                        <td> Pago de la Gesti&oacute;n </td>		
-                        <td> <?php echo ucwords($tipoConcesion) . 'S asignadas'; ?></td>
-                        <td> Importe por <?php echo $tipoConcesion; ?> </td>
-                        <td> Total a cancelar </td>	
+                        <td> GESTION </td>		
+                        <td> NRO <?php echo $tipoConcesion; ?>S</td>
+                        <td> PATENTE <?php echo $importeGestion; ?>   </td>
+                        <td> TIPO </td>	
+                        <td> IMPORTE </td>	
                     </tr>
                     <tr class="tblDatos">  
-                        <td> <?php echo $gestion; ?> </td>							
+                        <td> <?php echo $gestion; ?> </td>
                         <td> <?php echo $cantidadAsignada . ' [' . $unidad . ']' ?> </td>								
                         <td> <?php echo $importe ?> Bs.</td>										
+                        <td> <?php echo $tipoImporte ?></td>
                         <td> <?php echo $importeTotal . ' Bs.'; ?> </td>                                
                     <tr>                                               
                 </table>
-
-                <div id="codigo_barras">  
+                <span class='textoNormal'><b>Son:</b> <?php echo $importeTotalLiteral; ?> </span>
                 </div>
-<!--                <div style="font-family: Arial; font-size: 11px;"><br /><br />
-                ROGER MAMANI NINA<br />
-                CI: 40158965 LP
-                </div>-->
+                <div class='textoNormal' style='font-size: 9px;'>
+                    <table border='0' width='200px' >
+                        <tr> <td align='center'> <?php echo $solicitante;?> </td> </tr>
+                    </table>
+                </div>
+
             </div>  
         </div>
         <br /><br />
