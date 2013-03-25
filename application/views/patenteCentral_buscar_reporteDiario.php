@@ -16,7 +16,7 @@
         <input class="button" type="submit" value="Generar Reporte" name="submit">
     </p>
 </form>
-<?php if (!empty($mensaje_error)) echo $mensaje_error;?>
+<?php if (!empty($mensaje)) echo $mensaje;?>
 
 <script type="text/javascript">
 	jQuery("#formularioPagoPatente_1").validate({

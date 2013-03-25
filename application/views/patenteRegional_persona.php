@@ -234,7 +234,7 @@ if (!empty($persona)) {
                     </tr>
                 </table>
                 <br /><br /><br />
-                <button id="imprime_formulario" type="submit">Imprimir Formulario</button>
+                <button id="imprime_formulario" type="submit" class="button">Imprimir Formulario</button>
             </div>
         </td>
     </tr>
@@ -259,7 +259,6 @@ if (!empty($persona)) {
                 jQuery("input.maininput").attr("size", "1");
             }
         });
-        jQuery("#imprime_formulario").button();
         jQuery.validator.addMethod("solotexto", function(value, element) {
             return this.optional(element) || /^[a-zA-ZáéíóúAÉÍÓÚÑñ ]+$/.test(value);
         }, "Solo Texto.");

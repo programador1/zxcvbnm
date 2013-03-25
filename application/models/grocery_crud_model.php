@@ -46,10 +46,11 @@ class grocery_CRUD_Model  extends CI_Model  {
     }
     
     function get_list()
-    {
+    {   
     	if($this->table_name === null)
     		return false;
     	
+        
     	$select = "\"{$this->table_name}\".*";
     	
     	//set_relation special queries 
@@ -82,10 +83,9 @@ class grocery_CRUD_Model  extends CI_Model  {
 			$select = $this->relation_n_n_queries($select);
     	}
     		
-    	$this->db->select($select, false);    	
-    	
+    	$this->db->select($select, false);
     	$results = $this->db->get($this->table_name)->result();
-    	                
+        
     	return $results;
     }
     

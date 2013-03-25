@@ -7,12 +7,7 @@ class Login extends CI_Controller {
 
     function __construct() {
         parent::__construct();
-
-        $this->load->database();
-        $this->load->helper('url');
-
         $this->load->model('modelo_login', '', TRUE);
-        $this->load->library(array('table', 'session'));
     }
 
     function index() {

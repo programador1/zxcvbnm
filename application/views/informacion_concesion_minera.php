@@ -40,6 +40,9 @@ if ($tipo_concesion == 'CUADRICULA') {
             <th class="specalt"> Tipo: </th> <td> <?php echo $tipo_concesion; ?> </td>
             <th class="specalt"> Estado: </th> <td> <?php echo $estado_concesion; ?> </td>
         </tr>
+        <tr>
+            <th class="specalt"> Minerales Explotados: </th> <td colspan="3"> <?php echo $mineral; ?> </th> 
+        </tr>
 
         <tr>
             <th colspan="4"> DATOS DE CONCESIONARIO  </th>
@@ -47,15 +50,13 @@ if ($tipo_concesion == 'CUADRICULA') {
         <tr>
             <th class="specalt"> Nombre: </th> <td colspan="3">
                 <?php
-                if (!empty($nombre_empresa))
-                    echo $nombre_empresa;
-                else
-                    echo $nombre_persona . ' ' . $paterno_persona . ' ' . $materno_persona;
+                
+                    echo $concesionario;
                 ?> </td>            
         </tr>
         <tr>
-            <th class="specalt"> Nro NIT: </th> <td> <?php echo $numeroNit = ''; ?> </td>  
-            <th class="specalt"> Telefono: </th> <td> <?php echo $telefono = ''; ?> </td> 
+            <th class="specalt"> Nro NIT: </th> <td> <?php echo $nit; ?> </td>  
+            <th class="specalt"> Telefono: </th> <td> <?php echo $telefono; ?> </td> 
         </tr>
 
 
@@ -142,22 +143,21 @@ if ($tipo_concesion == 'PERTENENCIA') {
             <th class="specalt"> Tipo: </th> <td> <?php echo $tipo_concesion; ?> </td>
             <th class="specalt"> Estado: </th> <td> <?php echo $estado_concesion; ?> </td>
         </tr>
-
+        <tr>
+            <th class="specalt"> Minerales Explotados: </th> <td colspan="3"> <?php echo $mineral; ?> </th> 
+        </tr>
         <tr>
             <th colspan="4"> DATOS DE CONCESIONARIO  </th>
         </tr>
         <tr>
             <th class="specalt"> Nombre: </th> <td colspan="3">
-                <?php
-                if (!empty($nombre_empresa))
-                    echo $nombre_empresa;
-                else
-                    echo $nombre_persona . ' ' . $paterno_persona . ' ' . $materno_persona;
+                <?php                
+                    echo $concesionario;
                 ?> </td>            
         </tr>
         <tr>
-            <th class="specalt"> Nro NIT: </th> <td> <?php echo $numeroNit = ''; ?> </td>  
-            <th class="specalt"> Telefono: </th> <td> <?php echo $telefono = ''; ?> </td> 
+            <th class="specalt"> Nro NIT: </th> <td> <?php echo $nit; ?> </td>  
+            <th class="specalt"> Telefono: </th> <td> <?php echo $telefono; ?> </td> 
         </tr>
         <tr>
             <th class="specalt"> Direccion: </th> <td colspan="3"> <?php echo $DIRECCION; ?> </td>

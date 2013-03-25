@@ -9,13 +9,8 @@ class Patente_central extends CI_Controller {
 
     function __construct() {
         parent::__construct();
-
-        $this->load->database();
-        $this->load->helper('url');
-        $this->load->library('grocery_CRUD');
-        $this->load->library('session');
-        $this->load->helper('sergeotecmin');
         $this->load->model('modelo_patente_central', '', TRUE);
+        $this->load->library('funciones_comunes');
     }
 
     function _vista_principal($output = null) {
@@ -29,21 +24,22 @@ class Patente_central extends CI_Controller {
     function concesion() {
 
         $crud = new grocery_CRUD();
+        //if($this->uri->uri_string()=='/patente_central/concesion')
+        //$crud->limit(0);
         $crud->set_table('vista_concesion_minera');
         $crud->set_primary_key('id_concesion_minera', 'vista_concesion_minera');
         $crud->set_subject('Patentes');
         $crud->columns('numero_formulario', 'padron_nacional', 'nombre_concesion', 'concesionario');
         $crud->callback_column('nombre_concesion', array($this, '_concesion'));
-        $crud->callback_column('concesionario', array($this, '_concesionario'));
         $crud->display_as('numero_formulario', 'Nro Formulario Inscripcion')
                 ->display_as('padron_nacional', 'Nro Padron Nacional')
                 ->display_as('nombre_concesion', 'Concesion Minera');
         $crud->add_action('Ver Pago de patentes', '', 'patente_central/patentes', 'edit-icon');
         $crud->unset_add()
-             ->unset_edit()
-             ->unset_delete()
-             ->unset_print()
-             ->unset_export();
+                ->unset_edit()
+                ->unset_delete()
+                ->unset_print()
+                ->unset_export();
 
         $output = $crud->render();
         $output->titulo = 'BUSCAR CONCESIONES MINERAS';
@@ -51,9 +47,6 @@ class Patente_central extends CI_Controller {
     }
 
     function patentes($id_concesion_minera) {
-        $this->db->where('id_concesion_minera', $id_concesion_minera);
-        $datosConcesionMinera = $this->db->get('concesion_minera')->row();
-
         $crud = new grocery_CRUD();
         $crud->where('id_concesion_minera', $id_concesion_minera);
         $crud->where('estado_formulario_pago_patente', 'PAGADO');
@@ -64,65 +57,63 @@ class Patente_central extends CI_Controller {
         $crud->set_primary_key('id_concesion_minera', 'concesion_minera');
         //$crud->set_relation('id_concesion_minera', 'concesion_minera', 'numero_formulario');
 
-        $crud->columns('importe_gestion','nro_formulario_pago_patente', 'importe', 'fecha_pago', 'fecha_abono', 'banco', 'lugar_pago', 'observaciones');        
+        $crud->columns('importe_gestion', 'nro_formulario_pago_patente', 'importe', 'fecha_pago', 'fecha_abono', 'banco', 'lugar_pago', 'id_persona', 'observaciones');
         $crud->display_as('importe_gestion', 'Gestion')
-             ->display_as('nro_formulario_pago_patente', 'Nro Boleta');
-        
-        $crud->fields('id_concesion_minera','importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono','lugar_pago', 'observaciones','fecha_registro_sistema', 'estado_formulario_pago_patente');
-        $crud->required_fields('importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono','lugar_pago');
-        $crud->set_rules('importe','Importe','numeric')
-             ->set_rules('nro_formulario_pago_patente','Nro de Boleta','integer');
+                ->display_as('nro_formulario_pago_patente', 'Nro Boleta')
+                ->display_as('id_persona', 'Solicitante');
+        $crud->callback_column('id_persona', array($this, '_solicitante'));
+
+        $crud->fields('id_concesion_minera', 'importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono', 'lugar_pago', 'observaciones', 'fecha_registro_sistema', 'estado_formulario_pago_patente');
+        $crud->required_fields('importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono', 'lugar_pago');
+        $crud->set_rules('importe', 'Importe', 'numeric')
+                ->set_rules('nro_formulario_pago_patente', 'Nro de Boleta', 'integer');
         $crud->field_type('fecha_pago', 'date')
-             ->field_type('fecha_abono', 'date')             
-             ->field_type('observaciones', 'text')             
-             ->field_type('lugar_pago', 'enum',ARRAY('LA PAZ','SUCRE','COCHABAMBA','POTOSI','TARIJA','SANTA CRUZ','ORURO','TUPIZA'))
-             ->field_type('importe_gestion', 'enum',array('2011','2012','2013','2014','2015','2016','2017','2018','S/G','2010','2009','2008','2007','2006','2005','2004','2003','2002','2001','2000','1999','1998','1997','1996'))
-             ->field_type('banco', 'hidden','BM')
-             ->field_type('fecha_registro_sistema', 'hidden',date('Y-m-d h:m:s'))
-             ->field_type('id_concesion_minera', 'hidden',$id_concesion_minera)
-             ->field_type('estado_formulario_pago_patente', 'hidden','PAGADO');
+                ->field_type('fecha_abono', 'date')
+                ->field_type('observaciones', 'text')
+                ->field_type('lugar_pago', 'enum', ARRAY('LA PAZ', 'SUCRE', 'COCHABAMBA', 'POTOSI', 'TARIJA', 'SANTA CRUZ', 'ORURO', 'TUPIZA'))
+                ->field_type('importe_gestion', 'enum', array('2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', 'S/G', '2010', '2009', '2008', '2007', '2006', '2005', '2004', '2003', '2002', '2001', '2000', '1999', '1998', '1997', '1996'))
+                ->field_type('banco', 'hidden', 'BM')
+                ->field_type('fecha_registro_sistema', 'hidden', date('Y-m-d h:m:s'))
+                ->field_type('id_concesion_minera', 'hidden', $id_concesion_minera)
+                ->field_type('estado_formulario_pago_patente', 'hidden', 'PAGADO');
         $crud->unset_delete();
 
         $output = $crud->render();
         //$output->datosAdicionalesSuperior = $this->load->view('informacion_concesion_minera.php', $datosConcesionMinera, TRUE);
         //$output->titulo = 'PATENTES MINERAS';
         //-- Enivia la s vistas en forma de pestaña
-        $enviarContenido['contenido']=array(    'Datos de Patentes'=>$this->load->view('vista_grocerycrud.php', $output, TRUE),
-                                                'Datos de Concesion'=>$this->load->view('informacion_concesion_minera.php', $datosConcesionMinera, TRUE),
-                                                'Datos Para Reporte'=>$this->patentes_reportes($id_concesion_minera));
-        $output->output = boton('volver', site_url('patente_central/concesion')).$this->load->view('vista_pestana.php',$enviarContenido, TRUE);
+        $funcionesComunes = new funciones_comunes();
+        $enviarContenido['contenido'] = array('Datos de Patentes' => $this->load->view('vista_grocerycrud.php', $output, TRUE),
+            'Datos de Concesion' => $funcionesComunes->informacion_concesionMinera($id_concesion_minera),
+            'Datos Para Reporte' => $this->patentes_reportes($id_concesion_minera));
+        $output->output = boton('volver', site_url('patente_central/concesion')) . $this->load->view('vista_pestana.php', $enviarContenido, TRUE);
         $output->titulo = 'PATENTES MINERAS';
         $this->_vista_principal($output);
     }
+
     function patentes_reportes($id_concesion_minera) {
         $this->db->where('id_concesion_minera', $id_concesion_minera);
         $datosConcesionMinera = $this->db->get('concesion_minera')->row();
         $this->db->where('id_concesion_minera', $id_concesion_minera);
-        $this->db->order_by('importe_gestion','desc');
+        $this->db->where('estado_formulario_pago_patente', 'PAGADO');
+        $this->db->order_by('importe_gestion', 'desc');
         $datosPatentes = $this->db->get('patentes');
-        $html = mensaje_error('PATENTES SIN REGISTROS','Esta concesion, no tiene pago de patentes registrados!');
-        if ($datosPatentes->num_rows() > 0) {            
-            $this->load->library('table');
-            $this->table->set_heading('NRO INCRIPCION','NOMBRE DE LA CONCESION', 'NOMBRE DEL CONCESIONARIO', 'CUAD', 'GESTION', 'BOLETA', 'MONTO', 'FECHA PAGO');
-            foreach ($datosPatentes->result() AS $row){
-                $this->table->add_row($datosConcesionMinera->numero_formulario,
-                                        $datosConcesionMinera->nombre_concesion,
-                                        $datosConcesionMinera->nombre_empresa==NULL?$datosConcesionMinera->nombre_persona.' '.$datosConcesionMinera->paterno_persona.' '.$datosConcesionMinera->materno_persona:$datosConcesionMinera->nombre_empresa,
-                                        $datosConcesionMinera->cantidad_asignada,
-                                        $row->importe_gestion,
-                                        $row->nro_formulario_pago_patente,
-                                        alinear(number_format($row->importe,2),'derecha'),
-                                        date('d/m/Y',  strtotime($row->fecha_pago))
-                                      );
-            }            
-            
-            $cabecera= '<br /> DATOS PARA REPORTE DE PAGO DE PATENTES';
-            $cabecera.= '<br />';
-            $html = $cabecera.$this->table->generate();                
+        $html = mensaje('', 'PATENTES SIN REGISTROS!', ', Esta concesion, no tiene pago de patentes registrados!', 'info');
+        if ($datosPatentes->num_rows() > 0) {
+            //$this->load->library('table');
+            $this->table->set_heading('NRO INCRIPCION', 'NOMBRE DE LA CONCESION', 'NOMBRE DEL CONCESIONARIO', 'CUAD', 'GESTION', 'BOLETA', 'MONTO', 'FECHA PAGO');
+            foreach ($datosPatentes->result() AS $row) {
+                $this->table->add_row($datosConcesionMinera->numero_formulario, $datosConcesionMinera->nombre_concesion, $datosConcesionMinera->nombre_empresa == NULL ? $datosConcesionMinera->nombre_persona . ' ' . $datosConcesionMinera->paterno_persona . ' ' . $datosConcesionMinera->materno_persona : $datosConcesionMinera->nombre_empresa, $datosConcesionMinera->cantidad_asignada, $row->importe_gestion, $row->nro_formulario_pago_patente, alinear(number_format($row->importe, 2), 'derecha'), date('d/m/Y', strtotime($row->fecha_pago))
+                );
             }
-            return ($html);
 
+            $cabecera = '<br /> DATOS PARA REPORTE DE PAGO DE PATENTES';
+            $cabecera.= '<br />';
+            $html = $cabecera . $this->table->generate();
+        }
+        return ($html);
     }
+
     function patentes_formularioDePagoDePatentes($id_concesion_minera) {
         $this->db->where('id_concesion_minera', $id_concesion_minera);
         $query = $this->db->get('concesion_minera')->row();
@@ -147,19 +138,19 @@ class Patente_central extends CI_Controller {
         return $html;
     }
 
-    function _concesionario($value, $row) {
-        /*$html = '';
-        if ($row->nombre_empresa == NULL OR $row->nombre_empresa == '') {
-            $html = 'Tipo : <b>Personal</b><br />';
-            $html.='Nombre : <b>' . $row->nombre_persona . '</b><br />';
-            $html.='Paterno : <b>' . $row->paterno_persona . '</b><br />';
-            $html.='Materno : <b>' . $row->materno_persona . '</b><br />';
-            $html.='CI : <b>' . $row->numero_identidad . '</b>';
-        } else {
-            $html = 'Tipo : <b>Empresa</b><br />';
-            $html.='Nombre : <b>' . $row->nombre_empresa . '</b>';
-        }*/
-        return $row->concesionario;
+    function _solicitante($value, $row) {
+        //- Datos Solicitante
+        $this->db->where('id_persona', $row->id_persona);
+        $datosPersona = $this->db->get('persona');
+        $solicitante = '';
+        if ($datosPersona->num_rows() > 0) {
+            $datosPersona = $datosPersona->row();
+            $solicitante = '<b>Nombre: </b>' . $datosPersona->nombre_persona . ' ' . $datosPersona->paterno_persona . ' ' . $datosPersona->materno_persona;
+            $solicitante = '<b>' . $datosPersona->documento_identidad . ': </b>' . $datosPersona->numero_identidad . ' ' . $datosPersona->lugar_expedido;
+            $solicitante.= '<br /> <b> Tipo: </b>' . $row->tipo_persona;
+            $solicitante.= ' <b> Telefono: </b> ' . $row->telefono;
+        }
+        return $solicitante;
     }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -167,7 +158,7 @@ class Patente_central extends CI_Controller {
 //-- Modulo: Insertar Formulario de pago de patentes -------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    function formularioPagoPatente($datos='') {
+    function formularioPagoPatente($datos = '') {
         $datos['combo_banco'] = combo_pagoPatente_banco($this->session->userdata('pagoPatenteBanco'));
         $datos['fechaAbono'] = $this->session->userdata('fechaAbono');
 
@@ -195,30 +186,30 @@ class Patente_central extends CI_Controller {
             if ($consulta->num_rows() > 0) {
                 $titulo = 'El NUMERO DE FORMULARIO YA SE ENCUENTRA REGISTRADO';
                 $error = 'EL Nro de formulario: ' . $nroFormularioPagoPatente . ' ya se encuentra registrado en la base de datos';
-                $enviar_datos['mensaje_error'] = mensaje_error($titulo, $error);            
-                $this->formularioPagoPatente($enviar_datos);                
-            }else{
+                $enviar_datos['mensaje'] = mensaje($titulo, $error);
+                $this->formularioPagoPatente($enviar_datos);
+            } else {
                 //--Verifica si se esta pagando 2 veces la misma gestion
                 $this->db->where('id_concesion_minera', $datosPatente->id_concesion_minera);
                 $this->db->where('importe_gestion', $datosPatente->importe_gestion);
                 $this->db->where('estado_formulario_pago_patente', 'PAGADO');
                 $consulta2 = $this->db->get('patentes');
                 if ($consulta2->num_rows() > 0) {
-                $titulo = 'LA GESTION DE QUE DESEA CANCELAR YA SE ENCUENTRA REGISTRADO EN EL SISTEMA';
-                $error = 'La gestion: ' . $datosPatente->importe_gestion . ' del nro de formulario '.$nroFormularioPagoPatente.' que pretende pagar ya se encuentra pagado';
-                $enviar_datos['mensaje_error'] = mensaje_error($titulo, $error);            
-                $this->formularioPagoPatente($enviar_datos);                
-                }else{
+                    $titulo = 'LA GESTION DE QUE DESEA CANCELAR YA SE ENCUENTRA REGISTRADO EN EL SISTEMA';
+                    $error = 'La gestion: ' . $datosPatente->importe_gestion . ' del nro de formulario ' . $nroFormularioPagoPatente . ' que pretende pagar ya se encuentra pagado';
+                    $enviar_datos['mensaje'] = mensaje($titulo, $error);
+                    $this->formularioPagoPatente($enviar_datos);
+                } else {
                     //--Verifica si la gestion ya esta cancelada            
                     redirect(strtolower('Patente_central/editar_formularioPagoPatente/edit/') . $id_patentes);
-                }               
+                }
             }
             //--Verifica si la gestion ya esta cancelada            
             //redirect(strtolower('Patente_central/editar_formularioPagoPatente/edit/') . $id_patentes);
         } else {
             $titulo = 'El NUMERO DE FORMULARIO DE PAGO DE PATENTES NO EXISTE';
             $error = 'EL Nro de formulario: ' . $nroFormularioPagoPatente . ' no se encuentra registrado en la base de datos';
-            $enviar_datos['mensaje_error'] = mensaje_error($titulo, $error);            
+            $enviar_datos['mensaje'] = mensaje($titulo, $error);
             $this->formularioPagoPatente($enviar_datos);
         }
     }
@@ -337,7 +328,7 @@ class Patente_central extends CI_Controller {
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //-- Reporte Diario
-    function reporte_diario($datos='') {
+    function reporte_diario($datos = '') {
         $datos['titulo'] = 'REPORTE DIARIO';
         $datos['url'] = site_url('patente_central/listar_reporteDiario');
         $datos['reporte_diario'] = TRUE;
@@ -346,27 +337,27 @@ class Patente_central extends CI_Controller {
     }
 
     function listar_reporteDiario() {
-            $fechaAbono = $this->input->post('fechaInicio');
+        $fechaAbono = $this->input->post('fechaInicio');
         $datosConsulta = $this->modelo_patente_central->reporte_diarioPatentes($fechaAbono);
         //var_dump ($datosConsulta); exit;
-        
+
         if (!$datosConsulta) {
-            $titulo='FECHA SIN PAGO DE PATENTES';
-            $error='La fecha: ' . $fechaAbono . ' no tiene registrado ningun pago de patentes en la base de datos';
-            $datos['mensaje_error'] = mensaje_error($titulo, $error);
+            $titulo = 'FECHA SIN PAGO DE PATENTES';
+            $error = 'La fecha: ' . $fechaAbono . ' no tiene registrado ningun pago de patentes en la base de datos';
+            $datos['mensaje'] = mensaje('', $titulo, $error, 'info');
             $this->reporte_diario($datos);
         } else {
             $this->load->library('table');
-            $this->table->set_heading('Nro','Tipo', 'Estado', 'Nro Inscripci&oacute;n', 'Nombre Concesi&oacute;n', 'Gesti&oacute;n', 'Nro Boleta', 'Importe en Bs.', 'Fecha Pago');
-            $nro=0;
-            $totalRecaudado=0;
-            foreach ($datosConsulta->result() AS $row){
+            $this->table->set_heading('Nro', 'Tipo', 'Estado', 'Nro Inscripci&oacute;n', 'Nombre Concesi&oacute;n', 'Gesti&oacute;n', 'Nro Boleta', 'Importe en Bs.', 'Fecha Pago');
+            $nro = 0;
+            $totalRecaudado = 0;
+            foreach ($datosConsulta->result() AS $row) {
                 ++$nro;
                 $totalRecaudado = $totalRecaudado + $row->importe;
-                $this->table->add_row(alinear($nro,'derecha'),$row->tipo,$row->estado,alinear($row->nro_inscripcion,'derecha'),$row->nombre_concesion,alinear($row->gestion,'centro'),alinear($row->nro_boleta,'derecha'),alinear(number_format($row->importe,2),'derecha'),alinear($row->fecha_pago,'centro'));
-            }            
-            $cabecera = 'Nro total de registros: '.$nro;
-            $cabecera.= '<br /> Monto total recaudado: '.number_format($totalRecaudado,2).' ['.  numero_letra($totalRecaudado).']';
+                $this->table->add_row(alinear($nro, 'derecha'), $row->tipo, $row->estado, alinear($row->nro_inscripcion, 'derecha'), $row->nombre_concesion, alinear($row->gestion, 'centro'), alinear($row->nro_boleta, 'derecha'), alinear(number_format($row->importe, 2), 'derecha'), alinear($row->fecha_pago, 'centro'));
+            }
+            $cabecera = 'Nro total de registros: ' . $nro;
+            $cabecera.= '<br /> Monto total recaudado: ' . number_format($totalRecaudado, 2) . ' [' . numero_letra($totalRecaudado) . ']';
             $cabecera.= '<br />';
             $pie = '<br /><br /><br /><br /><br />
                     <table border="0" style="width:70%; text-align:center;" align="center">                        
@@ -382,25 +373,24 @@ class Patente_central extends CI_Controller {
                     cc. INFORMATICA
                     <br />SIN SELLO DE INFORMATICA NO TIENE VALIDEZ DE REVISION
                     ';
-            $enviarDatos['reporte'] = $cabecera.$this->table->generate().$pie; 
-            
-            
-            
-            
-            
-            
+            $enviarDatos['reporte'] = $cabecera . $this->table->generate() . $pie;
+
+
+
+
+
+
             $enviarDatos['tipoReporte'] = 'REPORTE DIARIO DE PAGO DE PATENTES';
-            $enviarDatos['tituloReporte'] = 'REPORTE DEL "'.fecha_literal($fechaAbono,'4').'"';            
-            
-                $datos['output'] = $this->load->view('vista_reportes.php', $enviarDatos, TRUE);
-                $this->session->set_userdata('htmlReporte', $datos['output']);
-                $this->_vista_principal($datos);
-            }
+            $enviarDatos['tituloReporte'] = 'REPORTE DEL "' . fecha_literal($fechaAbono, '4') . '"';
+
+            $datos['output'] = $this->load->view('vista_reportes.php', $enviarDatos, TRUE);
+            $this->session->set_userdata('htmlReporte', $datos['output']);
+            $this->_vista_principal($datos);
+        }
     }
-    
 
     //-- Reporte por Periodos
-    function reporte_general($datos='') {
+    function reporte_general($datos = '') {
         $datos['titulo'] = 'REPORTE GENERAL';
         $datos['url'] = site_url('patente_central/listar_reporteGeneral');
         $datos['output'] = $this->load->view('patenteCentral_buscar_reporteDiario.php', $datos, TRUE);
@@ -408,46 +398,44 @@ class Patente_central extends CI_Controller {
     }
 
     function listar_reporteGeneral() {
-        
+
         $fechaInicio = $this->input->post('fechaInicio');
         $fechaFinal = $this->input->post('fechaFinal');
         $datosConsulta = $this->modelo_patente_central->reporte_generalPatentes($fechaInicio, $fechaFinal);
-        
+
         if (!$datosConsulta) {
-            $titulo='FECHA SIN PAGO DE PATENTES';
-            $error='En la fecha: "' . $fechaInicio . '" al "'.$fechaFinal.'" no se tienen realizados ningun pago de patentes en la base de datos';
-            $datos['mensaje_error'] = mensaje_error($titulo, $error);
+            $titulo = 'FECHA SIN PAGO DE PATENTES';
+            $error = 'En la fecha: "' . $fechaInicio . '" al "' . $fechaFinal . '" no se tienen realizados ningun pago de patentes en la base de datos';
+            $datos['mensaje'] = mensaje('', $titulo, $error, 'info');
             $this->reporte_general($datos);
         } else {
             $this->load->library('table');
             //$this->table->set_heading('Tipo', 'Estado', 'Nro Inscripcion', 'Nombre Concesion', 'Gestion', 'Nro Formulario', 'Fecha Pago', 'Fecha Abono', 'Regional');            
-            $enviarDatos['tipoReporte'] = 'REPORTE GENERAL DE PAGO DE PATENTES';  
-            $enviarDatos['tituloReporte'] = 'REPORTE DEL "'.fecha_literal($fechaInicio,'4').'" AL "'.fecha_literal($fechaFinal,'4').'"';
+            $enviarDatos['tipoReporte'] = 'REPORTE GENERAL DE PAGO DE PATENTES';
+            $enviarDatos['tituloReporte'] = 'REPORTE DEL "' . fecha_literal($fechaInicio, '4') . '" AL "' . fecha_literal($fechaFinal, '4') . '"';
             //-- Genera la tabla
             $this->load->library('table');
-            $this->table->set_heading('Fecha Pago','Nro Formularios Procesados','Monto Recaudado 100%','Comisi&oacute;n Bancaria 2%','Ingreso S/G Extracto Bancario 98%');
-            $totalFormulariosProcesados=0;
-            $totalMontoRecaudado=0;
-            $totalComisionBancaria=0;
-            $totalIngresoExtractoBancario=0;
-            foreach ($datosConsulta->result() AS $row){
+            $this->table->set_heading('Fecha Pago', 'Nro Formularios Procesados', 'Monto Recaudado 100%', 'Comisi&oacute;n Bancaria 2%', 'Ingreso S/G Extracto Bancario 98%');
+            $totalFormulariosProcesados = 0;
+            $totalMontoRecaudado = 0;
+            $totalComisionBancaria = 0;
+            $totalIngresoExtractoBancario = 0;
+            foreach ($datosConsulta->result() AS $row) {
                 $totalFormulariosProcesados = $totalFormulariosProcesados + $row->nro_formularios_procesados;
                 $totalMontoRecaudado = $totalMontoRecaudado + $row->monto_recaudado;
                 $totalComisionBancaria = $totalComisionBancaria + $row->comision_bancaria;
                 $totalIngresoExtractoBancario = $totalIngresoExtractoBancario + $row->ingreso_extracto_bancario;
-                    $this->table->add_row(alinear($row->fecha_pago,'centro'), alinear($row->nro_formularios_procesados,'derecha'),alinear(number_format($row->monto_recaudado,2),'derecha'), alinear(number_format($row->comision_bancaria,2),'derecha'), alinear(number_format($row->ingreso_extracto_bancario,2),'derecha'));
-            }            
-            $this->table->add_row(alinear('TOTALES','centro','negrita','14'), alinear(number_format($totalFormulariosProcesados),'derecha','negrita','14'),  alinear(number_format($totalMontoRecaudado,2),'derecha','negrita','14'), alinear(number_format($totalComisionBancaria,2),'derecha','negrita','14'), alinear(number_format($totalIngresoExtractoBancario,2),'derecha','negrita','14'));
-            $enviarDatos['reporte'] = $this->table->generate(); 
-            
-                $datos['output'] = $this->load->view('vista_reportes.php', $enviarDatos, TRUE);
-                $this->session->set_userdata('htmlReporte', $datos['output']);
-                $this->_vista_principal($datos);
-            }        
+                $this->table->add_row(alinear($row->fecha_pago, 'centro'), alinear($row->nro_formularios_procesados, 'derecha'), alinear(number_format($row->monto_recaudado, 2), 'derecha'), alinear(number_format($row->comision_bancaria, 2), 'derecha'), alinear(number_format($row->ingreso_extracto_bancario, 2), 'derecha'));
+            }
+            $this->table->add_row(alinear('TOTALES', 'centro', 'negrita', '14'), alinear(number_format($totalFormulariosProcesados), 'derecha', 'negrita', '14'), alinear(number_format($totalMontoRecaudado, 2), 'derecha', 'negrita', '14'), alinear(number_format($totalComisionBancaria, 2), 'derecha', 'negrita', '14'), alinear(number_format($totalIngresoExtractoBancario, 2), 'derecha', 'negrita', '14'));
+            $enviarDatos['reporte'] = $this->table->generate();
+
+            $datos['output'] = $this->load->view('vista_reportes.php', $enviarDatos, TRUE);
+            $this->session->set_userdata('htmlReporte', $datos['output']);
+            $this->_vista_principal($datos);
+        }
     }
 
-    
-    
     //**********************************************************************************************************
     //-- Verifica las concesion POR CUADRICULAS que no tengan completo sus pagos de patentes ***********************************
     //**********************************************************************************************************
@@ -457,16 +445,16 @@ class Patente_central extends CI_Controller {
             echo 'No Se encontraron datos de concesiones vigentes con fecha de resolucion';
             exit;
         } else {
-            $nro=0;
+            $nro = 0;
             $this->load->library('table');
-            $this->table->set_heading('Nro','Nro Inscripcion', 'Nombre concesion','fecha Resolucion','Numero Resolucion','Gestiones Pagadas', 'Gestiones No Pagadas' ,'Accion'
-                    );
+            $this->table->set_heading('Nro', 'Nro Inscripcion', 'Nombre concesion', 'fecha Resolucion', 'Numero Resolucion', 'Gestiones Pagadas', 'Gestiones No Pagadas', 'Accion'
+            );
 
             $enviarDatos['tipoReporte'] = 'REPORTE PATENTES';
             $enviarDatos['tituloReporte'] = 'CONCESIONES MINERAS POR CUADRICULA <br /> QUE NO TIENEN AL DIA SUS PAGOS DE PATENTES <br /><br />';
-            
+
             foreach ($datosConcesionesVigentes->result() AS $concesion) {
-                $gestionResolucion = substr($concesion->fecha_resolucion, 0, 4); 
+                $gestionResolucion = substr($concesion->fecha_resolucion, 0, 4);
                 $id_concesion_minera = $concesion->id_concesion_minera;
                 $datosPatentes = $this->modelo_patente_central->patentes_concesiones($id_concesion_minera);
 
@@ -486,14 +474,14 @@ class Patente_central extends CI_Controller {
                             $gestionesNoPagadas.= '(' . $gestion . ') ';
                     }
                     if ($gestionesNoPagadas != '')
-                    $this->table->add_row(++$nro,$concesion->numero_formulario, $concesion->nombre_concesion,  date('d-m-Y',  strtotime($concesion->fecha_resolucion)),$concesion->numero_resolucion,$gestionesPagadas , $gestionesNoPagadas
-                                            ,'<a href="'. site_url('patente_central/patentes/'.$id_concesion_minera).'">Ver datos </a>'
-                                );
-                }else{
+                        $this->table->add_row(++$nro, $concesion->numero_formulario, $concesion->nombre_concesion, date('d-m-Y', strtotime($concesion->fecha_resolucion)), $concesion->numero_resolucion, $gestionesPagadas, $gestionesNoPagadas
+                                , '<a href="' . site_url('patente_central/patentes/' . $id_concesion_minera) . '">Ver datos </a>'
+                        );
+                }else {
                     //echo $id_concesion_minera;exit;
-                    $this->table->add_row(++$nro,$concesion->numero_formulario, $concesion->nombre_concesion, date('d-m-Y',  strtotime($concesion->fecha_resolucion)),$concesion->numero_resolucion,'-' , 'No tiene ningun pago registrado en la base de datos'
-                                    ,'<a href="'. site_url('patente_central/patentes/'.$id_concesion_minera).'">Ver datos </a>'
-                                );
+                    $this->table->add_row(++$nro, $concesion->numero_formulario, $concesion->nombre_concesion, date('d-m-Y', strtotime($concesion->fecha_resolucion)), $concesion->numero_resolucion, '-', 'No tiene ningun pago registrado en la base de datos'
+                            , '<a href="' . site_url('patente_central/patentes/' . $id_concesion_minera) . '">Ver datos </a>'
+                    );
                 }
             }
 
@@ -501,8 +489,8 @@ class Patente_central extends CI_Controller {
             $datos['output'] = $this->load->view('vista_reportes.php', $enviarDatos, TRUE);
             $this->_vista_principal($datos);
         }
-
     }
+
 //**********************************************************************************************************
     //-- Verifica las concesion POR PERTENENCIA que no tengan completo sus pagos de patentes ***********************************
     //**********************************************************************************************************
@@ -512,15 +500,15 @@ class Patente_central extends CI_Controller {
             echo 'No Se encontraron datos de concesiones vigentes con fecha de resolucion';
             exit;
         } else {
-            $nro=0;
+            $nro = 0;
             $this->load->library('table');
-            $this->table->set_heading('Nro','Nro Inscripcion', 'Nombre concesion','Concesionario','Nacionalizada','fecha Inscripcion','Gestiones Pagadas', 'Gestiones No Pagadas' ,'Accion');
+            $this->table->set_heading('Nro', 'Nro Inscripcion', 'Nombre concesion', 'Concesionario', 'Nacionalizada', 'fecha Inscripcion', 'Gestiones Pagadas', 'Gestiones No Pagadas', 'Accion');
 
             $enviarDatos['tipoReporte'] = 'REPORTE PATENTES';
             $enviarDatos['tituloReporte'] = 'CONCESIONES MINERAS POR PERTENENCIA <br /> QUE NO TIENEN AL DIA SUS PAGOS DE PATENTES <br /><br />';
-            
+
             foreach ($datosConcesionesVigentes->result() AS $concesion) {
-                $gestionResolucion = substr($concesion->fecha_inscripcion, 0, 4); 
+                $gestionResolucion = substr($concesion->fecha_inscripcion, 0, 4);
                 $id_concesion_minera = $concesion->id_concesion_minera;
                 $datosPatentes = $this->modelo_patente_central->patentes_concesiones($id_concesion_minera);
 
@@ -540,20 +528,14 @@ class Patente_central extends CI_Controller {
                             $gestionesNoPagadas.= '(' . $gestion . ') ';
                     }
                     if ($gestionesNoPagadas != '')
-                    $this->table->add_row(++$nro,$concesion->numero_formulario, $concesion->nombre_concesion,  
-                                            $concesion->nombre_empresa==NULL?$concesion->nombre_persona.' '.$concesion->paterno_persona.' '.$concesion->materno_persona:$concesion->nombre_empresa,
-                                            $concesion->NACIONALIZADA=='t'?'SI':'NO',
-                                            date('d-m-Y',  strtotime($concesion->fecha_inscripcion)),$gestionesPagadas , $gestionesNoPagadas
-                                            ,'<a href="'. site_url('patente_central/patentes/'.$id_concesion_minera).'">Ver datos </a>'
-                                );
-                }else{
+                        $this->table->add_row(++$nro, $concesion->numero_formulario, $concesion->nombre_concesion, $concesion->nombre_empresa == NULL ? $concesion->nombre_persona . ' ' . $concesion->paterno_persona . ' ' . $concesion->materno_persona : $concesion->nombre_empresa, $concesion->NACIONALIZADA == 't' ? 'SI' : 'NO', date('d-m-Y', strtotime($concesion->fecha_inscripcion)), $gestionesPagadas, $gestionesNoPagadas
+                                , '<a href="' . site_url('patente_central/patentes/' . $id_concesion_minera) . '">Ver datos </a>'
+                        );
+                }else {
                     //echo $id_concesion_minera;exit;
-                    $this->table->add_row(++$nro,$concesion->numero_formulario, $concesion->nombre_concesion, 
-                                    $concesion->nombre_empresa,
-                                    $concesion->NACIONALIZADA=='t'?'SI':'NO',
-                                    date('d-m-Y',  strtotime($concesion->fecha_inscripcion)),'-' , 'No tiene ningun pago registrado en la base de datos'
-                                    ,'<a href="'. site_url('patente_central/patentes/'.$id_concesion_minera).'">Ver datos </a>'
-                                );
+                    $this->table->add_row(++$nro, $concesion->numero_formulario, $concesion->nombre_concesion, $concesion->nombre_empresa, $concesion->NACIONALIZADA == 't' ? 'SI' : 'NO', date('d-m-Y', strtotime($concesion->fecha_inscripcion)), '-', 'No tiene ningun pago registrado en la base de datos'
+                            , '<a href="' . site_url('patente_central/patentes/' . $id_concesion_minera) . '">Ver datos </a>'
+                    );
                 }
             }
 
@@ -561,8 +543,8 @@ class Patente_central extends CI_Controller {
             $datos['output'] = $this->load->view('vista_reportes.php', $enviarDatos, TRUE);
             $this->_vista_principal($datos);
         }
-
     }
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //-- FUNCIONES DE USO GENERAL ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -582,17 +564,16 @@ class Patente_central extends CI_Controller {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     //- Cambiar Contraseña ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    function usuario(){
-        $this->load->library('funciones_comunes');
-        $usuario = new Funciones_comunes();
-        $output= $usuario->usuario_cambiarPassword();
+    function usuario() {
+        $usuario = new funciones_comunes();
+        $output = $usuario->usuario_cambiarPassword();
         $this->_vista_principal($output);
     }
-    
-    function mensaje(){
-        $this->load->library('funciones_comunes');
-        $mensaje = new Funciones_comunes();
-        $output= $mensaje->mensaje();
+
+    function mensajes() {
+        $mensaje = new funciones_comunes();
+        $output = $mensaje->mensaje();
         $this->_vista_principal($output);
     }
+
 }

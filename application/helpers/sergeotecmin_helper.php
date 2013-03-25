@@ -24,12 +24,26 @@ function combo_pagoPatente_banco($valuePagoPatenteBanco = '') {
     return $html;
 }
 
-//- Mensaje Error
-function mensaje_error($titulo = '', $error = '', $descripcion = '') {
-    $html = '<div class="message error">';
-    $html.='<h2>' . $titulo . '</h2>';
-    $html.=$descripcion;
-    $html.='<p><strong>' . $error . '</strong></p></div>';
+//- Mensajes error, info, correcto, advertencia
+function mensaje($titulo = '', $subTitulo = '', $descripcion = '', $tipo = 'error') {
+    switch ($tipo) {
+        case 'error':
+            $class = 'message error';
+            break;
+        case 'info':
+            $class = 'message tip';
+            break;
+        case 'correcto':
+            $class = 'message success';            
+            break;
+        case 'advertencia':
+            $class = 'message warning';
+            break;
+    }
+    $html='<h3>' . $titulo . '</h3>';
+    $html.= '<div class="'.$class.'">';    
+    //$html.=$descripcion;
+    $html.='<p><strong>' . $subTitulo . '</strong> '.$descripcion.'</p></div>';
     return $html;
 }
 
@@ -67,7 +81,7 @@ function alinear($valor, $alinear = 'izquierda', $negrita = '', $tamano = '') {
 function fecha_literal($Fecha, $Formato = 2) {
     $dias = array(1 => 'Lunes', 2 => 'Martes', 3 => 'Mièrcoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sàbado', 7 => 'Domingo');
     $meses = array(1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio',
-        7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre');    
+        7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre');
     $aux = date_parse($Fecha);
     switch ($Formato) {
         case 1:  // 04/10/10
@@ -79,7 +93,7 @@ function fecha_literal($Fecha, $Formato = 2) {
         case 4:   // 4 de octubre de 2010
             return $aux['day'] . ' de ' . $meses[$aux['month']] . ' de ' . $aux['year'];
         case 5:
-            return date('d/m/Y',  strtotime($Fecha));
+            return date('d/m/Y', strtotime($Fecha));
         default:
             return date('d/m/Y', strtotime($Fecha));
     }
@@ -159,7 +173,8 @@ function numero_letra($num, $fem = false, $dec = true) {
     if ($num[0] == '-') {
         $neg = 'menos ';
         $num = substr($num, 1);
-    }else
+    }
+    else
         $neg = '';
     while ($num[0] == '0')
         $num = substr($num, 1);
@@ -183,9 +198,11 @@ function numero_letra($num, $fem = false, $dec = true) {
                 if ($n != '0')
                     $zeros = false;
                 $fra .= $n;
-            }else
+            }
+            else
                 $ent .= $n;
-        }else
+        }
+        else
             break;
     }
     $ent = '     ' . $ent;
@@ -199,7 +216,8 @@ function numero_letra($num, $fem = false, $dec = true) {
             else
                 $fin .= ' ' . $matuni[$s];
         }
-    }else
+    }
+    else
         $fin = '';
     if ((int) $ent === 0)
         return 'Cero ' . $fin;
@@ -252,7 +270,7 @@ function numero_letra($num, $fem = false, $dec = true) {
                 $t .= ' mil';
             }
         } elseif ($num == 1) {
-            $t .= ' ' . $matsub[$sub] . 'on';
+            $t .= ' ' . $matsub[$sub] . '&oacute;n';
         } elseif ($num > 1) {
             $t .= ' ' . $matsub[$sub] . 'ones';
         }
@@ -269,27 +287,28 @@ function numero_letra($num, $fem = false, $dec = true) {
     $tex = $neg . substr($tex, 1) . $fin;
     //Zi hack --> return ucfirst($tex);
     if (empty($numeroFloat[1]))
-        $numeroFloat[1] = 0;
+        $numeroFloat[1] = '00';
     $end_num = ucfirst($tex) . ' ' . $numeroFloat[1] . '/100 bolivianos';
     return $end_num;
 }
 
 // - BOTONES --------------------------------------------------------------------------------------------------
-function boton($valor = 'volver',$url='') {
+function boton($valor = 'volver', $url = '') {
     $valor = strtolower($valor);
     $html = '';
     switch ($valor) {
         case 'volver':
-            if($url=='') $html = '<a id="volver" href="#" title="Volver"> <img src="'.base_url().'estilo/images/boton_volver.png" width="119" height="41" alt="Volver"/> </a>';
-            else        $html = '<a href="'.$url.'" title="Volver"> <img src="'.base_url().'estilo/images/boton_volver.png" width="119" height="41" alt="Volver"/> </a>';
+            if ($url == '')
+                $html = '<a id="volver" href="#" title="Volver"> <img src="' . base_url() . 'estilo/images/boton_volver.png" width="119" height="41" alt="Volver"/> </a>';
+            else
+                $html = '<a href="' . $url . '" title="Volver"> <img src="' . base_url() . 'estilo/images/boton_volver.png" width="119" height="41" alt="Volver"/> </a>';
             break;
         case 'imrpimir':
-            $html = '<a id="simplePrint" href="#" title="Imprimir"> <img src="'.base_url().'estilo/images/boton_imprimir.png" width="129" height="41" alt="Imprimir"/> </a>';
+            $html = '<a id="simplePrint" href="#" title="Imprimir"> <img src="' . base_url() . 'estilo/images/boton_imprimir.png" width="129" height="41" alt="Imprimir"/> </a>';
             break;
     }
     return $html;
 }
-
 
 // - Define los tipos de usuarios del sistema --------------------------------------------------------------------------------------------------
 function tipo_usuario() {

@@ -6,12 +6,7 @@ if (!defined('BASEPATH'))
 class Importar_persona extends CI_Controller {
 
     function __construct() {
-        parent::__construct();
-        $this->load->database();
-        $this->load->helper('url');
-        $this->load->library('grocery_CRUD');
-        $this->load->library('session');
-        $this->load->helper('sergeotecmin');
+        parent::__construct();        
         $this->load->model('modelo_importar_persona', '', TRUE);
     }
 

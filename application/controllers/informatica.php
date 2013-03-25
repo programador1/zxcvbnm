@@ -6,12 +6,7 @@ if (!defined('BASEPATH'))
 class Informatica extends CI_Controller {
 
     function __construct() {
-        parent::__construct();
-        $this->load->database();
-        $this->load->helper('url');
-        $this->load->library('grocery_CRUD');
-        $this->load->library('session');
-        $this->load->helper('sergeotecmin');
+        parent::__construct();        
         $this->load->model('modelo_informatica', '', TRUE);
     }
 
@@ -29,12 +24,11 @@ class Informatica extends CI_Controller {
         $crud = null;
         $crud = new grocery_CRUD();
         $crud->order_by('estado_concesion','desc');
-        $crud->set_table('concesion_minera');
-        $crud->set_primary_key('id_concesion_minera', 'concesion_minera');
+        $crud->set_table('vista_concesion_minera');
+        $crud->set_primary_key('id_concesion_minera', 'vista_concesion_minera');
         $crud->set_subject('Patentes');
-        $crud->columns('numero_formulario', 'padron_nacional', 'nombre_concesion', 'nombre_empresa');
-        $crud->callback_column('nombre_concesion', array($this, '_concesion'))
-                ->callback_column('nombre_empresa', array($this, '_concesionario'));
+        $crud->columns('numero_formulario', 'padron_nacional', 'nombre_concesion','concesionario');
+        $crud->callback_column('nombre_concesion', array($this, '_concesion'));
         $crud->display_as('numero_formulario', 'Nro Formulario Inscripcion')
                 ->display_as('padron_nacional', 'Nro Padron Nacional')
                 ->display_as('nombre_concesion', 'Concesion Minera');
@@ -191,20 +185,7 @@ class Informatica extends CI_Controller {
         return $html;
     }
 
-    function _concesionario($value, $row) {
-        $html = '';
-        if ($row->nombre_empresa == NULL OR $row->nombre_empresa == '') {
-            $html = 'Tipo : <b>Personal</b><br />';
-            $html.='Nombre : <b>' . $row->nombre_persona . '</b><br />';
-            $html.='Paterno : <b>' . $row->paterno_persona . '</b><br />';
-            $html.='Materno : <b>' . $row->materno_persona . '</b><br />';
-            $html.='CI : <b>' . $row->numero_identidad . '</b>';
-        } else {
-            $html = 'Tipo : <b>Empresa</b><br />';
-            $html.='Nombre : <b>' . $row->nombre_empresa . '</b>';
-        }
-        return $html;
-    }
+    
 //=======================================================================================================================
 //-- Verifica las concesion POR CUADRICULAS que no tengan completo sus pagos de patentes
 //=======================================================================================================================

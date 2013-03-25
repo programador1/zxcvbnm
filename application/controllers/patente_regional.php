@@ -7,12 +7,8 @@ class Patente_regional extends CI_Controller {
 
     function __construct() {
         parent::__construct();
-        $this->load->database();
-        $this->load->helper('url');
-        $this->load->library('grocery_CRUD');
-        $this->load->library('session');
-        $this->load->helper('sergeotecmin');
         $this->load->model('modelo_patente_regional', '', TRUE);
+        $this->load->library('funciones_comunes');
     }
 
     function _vista_principal($output = null) {
@@ -42,8 +38,7 @@ class Patente_regional extends CI_Controller {
             $crud->set_subject('Patentes');
             $crud->columns('numero_formulario', 'padron_nacional', 'nombre_concesion', 'concesionario');
             $crud->add_action('', '', '', 'garmaser', array($this, '_linkImprimir')); //garmaser:: se pone para que imprima tal como la funcion devuelve
-            $crud->callback_column('nombre_concesion', array($this, '_concesion'));
-            $crud->callback_column('concesionario', array($this, '_concesionario'));
+            $crud->callback_column('nombre_concesion', array($this, '_concesion'));            
             //$crud->callback_column('imprimir', array($this, '_linkImprimir'));
             $crud->display_as('numero_formulario', 'Nro Formulario Inscripcion')
                     ->display_as('padron_nacional', 'Nro Padron Nacional')
@@ -144,7 +139,7 @@ class Patente_regional extends CI_Controller {
             $descripcion.= '<tr><td> <b>Gestion actual: </b></td>  <td>' . $gestionVigente . '</td></tr></table>';
             $error = 'Patentes SIN PAGAR: <br /><br /> GESTION ' . $gestionesNoPagadas;
 
-            $retornar->output = $linkVolver . ' ' . mensaje_error($titulo, $error, $descripcion);
+            $retornar->output = $linkVolver . ' ' . mensaje($titulo, $error, $descripcion);
             $this->_vista_principal($retornar);
         } else {
             //--2. Controla si ya REALIZO EL PAGO de la gestion actual y la siguiente
@@ -163,7 +158,7 @@ class Patente_regional extends CI_Controller {
                 $datosSimpleProgresivo = $this->_calcular_simpleProgresivo($datosConcesion, $datosImporte, $gestion, $gestionResolucion);
                 $importe = $datosSimpleProgresivo['importe'];
                 $tipoImporte = $datosSimpleProgresivo['tipoImporte'];
-                $importeCalculado = $datosSimpleProgresivo['importeCalculado'];                
+                $importeCalculado = $datosSimpleProgresivo['importeCalculado'];
                 if ($realizoPago->num_rows() > 0) {
                     $realizoPago = $realizoPago->row();
                     $estado = $realizoPago->estado_formulario_pago_patente;
@@ -182,16 +177,16 @@ class Patente_regional extends CI_Controller {
                             $tipoImporte2 = $datosSimpleProgresivo['tipoImporte'];
                             $importeCalculado2 = $datosSimpleProgresivo['importeCalculado'];
                             if ($importeCancelado >= $importeCalculado2)
-                                $this->table->add_row(   $realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe2, $tipoImporte2, $importeCancelado,' Fecha de pago : '.fecha_literal($fechaPago,5), 'Registrado en el sistema');
+                                $this->table->add_row(   $realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe2, $tipoImporte2, number_format($importeCancelado,2),' Fecha de pago : '.fecha_literal($fechaPago,5), 'Registrado en el sistema');
                             else
-                                $this->table->add_row($realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, ($importeCalculado - $importeCancelado) , 'Cancelado : '.$importeCancelado.'<br />Fecha pago : '.fecha_literal($fechaPago,5) ,'<button class="emitir_formulario" id="'.$gestion.'" name="'.$importeCalculado.'">Emitir Reintegro</button>');
+                                $this->table->add_row($realizoPago->importe_gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, number_format(($importeCalculado - $importeCancelado),2) , 'Cancelado : '.$importeCancelado.'<br />Fecha pago : '.fecha_literal($fechaPago,5) ,'<button class="emitir_formulario button" id="'.$gestion.'" name="'.$importeCalculado.'">Emitir Reintegro</button>');
                             break;
                         case 'EMITIDO':
-                                $this->table->add_row($gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, $importeCalculado, '','<button class="emitir_formulario" id="'.$gestion.'" name="'.$importeCalculado.'">Emitir otro formulario</button>');
+                                $this->table->add_row($gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, number_format($importeCalculado,2), '','<button class="emitir_formulario button" id="'.$gestion.'" name="'.$importeCalculado.'">Emitir otro formulario</button>');
                             break;
                     }
                 }else {
-                    $this->table->add_row($gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, $importeCalculado, '','<button class="emitir_formulario" id="'.$gestion.'" name="'.$importeCalculado.'">Realizar pago</button>');
+                                $this->table->add_row($gestion, $cantidadAsignada . ' [' . $unidad . ']', $importe, $tipoImporte, number_format($importeCalculado,2), '','<button class="emitir_formulario button" id="'.$gestion.'" name="'.$importeCalculado.'">Realizar pago</button>');
                 }
             }
             $enviarDatos['tablaPagos'] = $this->table->generate();
@@ -340,7 +335,7 @@ class Patente_regional extends CI_Controller {
         //-- saca los minerales
         $this->db->where('id_concesion_minera', $concesionPatente->id_concesion_minera);
         $datosExplotacion = $this->db->get('vista_explotacion')->row();        
-        $mineral = $datosExplotacion->concesionario;
+        $mineral = $datosExplotacion->simbolo;
         
         //-- saca los datos del depositante
         $this->db->where('id_persona', $concesionPatente->id_persona);
@@ -377,7 +372,7 @@ class Patente_regional extends CI_Controller {
             $datosFormulario['tipoConcesion']       = $concesionPatente->tipo_concesion;
             $datosFormulario['unidad']              = $concesionPatente->unidad;
             
-            $datosFormulario['importeTotal']        = $concesionPatente->importe;
+            $datosFormulario['importeTotal']        = number_format($concesionPatente->importe,2);
             $datosFormulario['importeTotalLiteral'] = numero_letra($concesionPatente->importe);
             $datosFormulario['nit']                 = $concesionPatente->nit;
             $datosFormulario['telefono']            = $concesionPatente->telefono;
@@ -453,147 +448,6 @@ class Patente_regional extends CI_Controller {
         return $resultado;
     }
 
-    function patentes_imprimirFormularioDePagoDePatentes($id_concesion_minera) {
-        //$this->_controlarFormularioPagoPatentes($id_concesion_minera);
-        //-- Saca los datos de una concesion
-        $this->db->where('id_concesion_minera', $id_concesion_minera);
-        $datosConcesion = $this->db->get('concesion_minera')->row();
-        //-- Saca los datos de importe gestion vigente
-        $this->db->where('estado', 'A');
-        $datosImporte = $this->db->get('importe_patente')->row();
-
-        //$resultadoControl = _controlar_formularioPagoPatentes($datosConcesion, $datosImporte);
-        //-- recupera datos que se usaran para controlar
-        if (strtolower($datosConcesion->tipo_concesion) === 'cuadricula')
-            $gestionResolucion = substr($datosConcesion->fecha_resolucion, 0, 4);
-        else
-            $gestionResolucion = substr($datosConcesion->fecha_inscripcion, 0, 4);
-        ///////////////////////////////////////////////////////////////////////
-        //-- 1. Controla si una concesion tiene todas sus patentes canceladas
-        ///////////////////////////////////////////////////////////////////////
-        $html = '';
-        //-- Lista las patentes pagadas de una concesion
-        $this->db->where('id_concesion_minera', $id_concesion_minera);
-        $patentes = $this->db->get('patentes');
-        //-- Verifica si pago todas las gestiones desde su gestion de resolucion hasta la fecha
-        $gestion = 0;
-        $gestionesPagadas = '';
-        $gestionesNoPagadas = '';
-        for ($gestion = $gestionResolucion; $gestion < $datosImporte->gestion; $gestion++) {
-            $sw = 0;
-            foreach ($patentes->result() as $row) {
-                $importeGestion = $row->importe_gestion;
-                if ($gestion == $importeGestion)
-                    $sw = 1;
-            }
-            if ($sw == 1)
-                $gestionesPagadas.= '<br />' . $gestion;
-            else
-                $gestionesNoPagadas.= '<br />' . $gestion;
-        }
-
-        if (!($gestionesNoPagadas == '')) {
-            $linkVolver = '<a id="volver" href="#" title="Volver a generar nueva busqueda"> <img src="' . base_url() . 'estilo/images/boton_volver.png" width="119" height="41" alt="Volver"/> </a>';
-            //mensaje error
-            $titulo = 'HISTORIAL DE PAGOS INCOMPLETO';
-            $descripcion = 'No se puede emitir formulario, por falta de pagos de patentes:';
-            $descripcion.= '<table><tr><td><b>Nro Inscripcion:</b></td>  <td> ' . $datosConcesion->numero_formulario . '</td></tr>';
-            $descripcion.= '<tr><td><b>Nombre Concesion:</b></td>  <td> ' . $datosConcesion->nombre_concesion . '</td></tr>';
-            $descripcion.= '<tr><td><b>Gestion que se emitio la resolucion:</b></td>  <td> ' . $gestionResolucion . '</td></tr>';
-            $descripcion.= '<tr><td> <b>Gestion actual: </b></td>  <td>' . $datosImporte->gestion . '</td></tr></table>';
-            $error = 'Patentes SIN PAGAR: <br /><br /> GESTION ' . $gestionesNoPagadas;
-
-            $retornar->output = $linkVolver . ' ' . mensaje_error($titulo, $error, $descripcion);
-            $this->_vista_principal($retornar);
-        } else {
-            ///////////////////////////////////////////////////////////////////////
-            //-- 2. Controla si le corresponde pago PROGRESIVO
-            ///////////////////////////////////////////////////////////////////////
-            $cantidadAsignada = $datosConcesion->cantidad_asignada;
-            switch (strtolower($datosConcesion->tipo_concesion)) {
-                case 'cuadricula':
-                    if ($datosConcesion->unidad === 'HAS')
-                        $cantidadAsignada = $cantidadAsignada / 25; //convierte a cuadiculas si son HAS
-                    $gestionesVigentes = $datosImporte->gestion - $gestionResolucion;    //saca el numero de gestiones de vigencia
-                    $gestionesVigentes = 1 + $gestionesVigentes;                        // sumamos mas uno, para tomar en cuenta la gestion de la resolucion
-                    if ($gestionesVigentes >= $datosImporte->gestiones_aplicables_progesivo) {
-                        //--Define el costo de importe PROGRESIVO para CUADRICULA
-                        $progresivo = TRUE;
-                        $importe = $datosImporte->importe_cuadricula_progresivo;
-                    } else {
-                        //--Define el costo NORMAL para CUADRICULA
-                        $progresivo = FALSE;
-                        $importe = $datosImporte->importe_cuadricula;
-                    }
-                    break;
-                case 'pertenencia':
-                    if ($datosConcesion->unidad === 'M2')
-                        $cantidadAsignada = $cantidadAsignada / 10000; //convierte a HAS si son M2
-                    if ($cantidadAsignada > 1000) {
-                        //--Define el costo de importe PROGRESIVO para CUADRICULA
-                        $progresivo = TRUE;
-                        $importe = $datosImporte->importe_pertenencia_progresivo;
-                    } else {
-                        //--Define el costo NORMAL para CUADRICULA
-                        $progresivo = FALSE;
-                        $importe = $datosImporte->importe_pertenencia;
-                    }
-                    break;
-            }
-            //-- Saca el nombre de concesion
-            if ($datosConcesion->nombre_empresa == NULL OR $datosConcesion->nombre_empresa == '')
-                $nombreConcesionario = $datosConcesion->nombre_persona . ' ' . $datosConcesion->paterno_persona . ' ' . $datosConcesion->materno_persona;
-            else
-                $nombreConcesionario = $datosConcesion->nombre_empresa;
-
-            // prepara datos para enviar al formulario
-            $datosFormulario['cantidadAsignada'] = $datosConcesion->cantidad_asignada;
-            $datosFormulario['nombreConcesionario'] = $nombreConcesionario;
-            $datosFormulario['nombreConcesion'] = $datosConcesion->nombre_concesion;
-            $datosFormulario['numeroInscripcion'] = $datosConcesion->numero_formulario;
-            $datosFormulario['padronNacional'] = $datosConcesion->padron_nacional;
-            $datosFormulario['departamento'] = $datosConcesion->departamento;
-            $datosFormulario['provincia'] = $datosConcesion->provincia;
-            $datosFormulario['canton'] = $datosConcesion->canton;
-            $datosFormulario['codigo_municipio'] = $datosConcesion->codigo_municipio;
-            $datosFormulario['tipoConcesion'] = $datosConcesion->tipo_concesion;
-            $datosFormulario['gestion'] = $datosImporte->gestion;
-            $datosFormulario['unidad'] = $datosConcesion->unidad;
-            $datosFormulario['progresivo'] = $progresivo;
-            $datosFormulario['importe'] = $importe;
-            $datosFormulario['importeTotal'] = $importe * $cantidadAsignada;
-            $datosFormulario['nit'] = '---';
-            $datosFormulario['telefono'] = '---';
-            $datosFormulario['resolucion'] = $datosConcesion->numero_resolucion . ' de fecha ' . fecha_literal($datosConcesion->fecha_resolucion, 4);
-            $datosFormulario['canton2'] = $datosConcesion->CANTON2;
-
-            $datosInsertar = array('id_concesion_minera' => $id_concesion_minera,
-                'importe_gestion' => $datosImporte->gestion,
-                'importe' => $datosFormulario['importeTotal'],
-                'id_importe_patente' => $datosImporte->id_importe_patente,
-                'estado_formulario_pago_patente' => 'EMITIDO',
-                'fecha_formulario_pago_patente' => date('Y-m-d H:i:s')
-            );
-            $this->db->insert('patentes', $datosInsertar); //inserta los datos en la tabla patentes para generar numero de formulario
-
-            $datosFormulario['nroFormularioPagoPatente'] = 'FP' . $id_patentes = $this->db->insert_id(); //recupera el id_patente ingresado
-            $datosFormulario['fechaEmision'] = date('d/m/Y');
-            $datosFormulario['codigoBarras'] = $datosFormulario['nroFormularioPagoPatente'];
-
-            //-- Genera codigo de barras
-            //$this->load->helper(array('barcode39'));
-            //$datosFormulario['codigoBarras']=barcode39_2($datosFormulario['nroFormularioPagoPatente']);
-            // GENERA PDF
-            //$this->load->helper(array('dompdf', 'file'));
-            // page info here, db calls, etc.
-            //$html = $this->load->view('formulario_pago_patentes.php', $datosFormulario, true);
-            //pdf_create($html, 'filename');
-
-            $datos['output'] = $this->load->view('formulario_pago_patentes.php', $datosFormulario, true);
-            $this->_vista_principal($datos);
-        }
-    }
-
 //=============================================================================================================
 // FUNCIONES DE callback_column 
 //=============================================================================================================
@@ -613,27 +467,12 @@ class Patente_regional extends CI_Controller {
         $html.= '<p><strong>Estado : ' . strtoupper($row->estado_concesion) . '</strong></p></div>';
         return $html;
     }
-
-    function _concesionario($value, $row) {
-        $html = '';
-        /*if ($row->nombre_empresa == NULL OR $row->nombre_empresa == '') {
-            $html = 'Tipo : <b>Personal</b><br />';
-            //$html.='Nombre : <b>' . $row->nombre_persona . '</b><br />';
-            //$html.='Paterno : <b>' . $row->paterno_persona . '</b><br />';
-            //$html.='Materno : <b>' . $row->materno_persona . '</b><br />';
-            //$html.='CI : <b>' . $row->numero_identidad . '</b>';
-        } else {
-            $html = 'Tipo : <b>Empresa</b><br />';
-            //$html.='Nombre : <b>' . $row->nombre_empresa . '</b>';
-        }
-         * */
-         
-        $html='Nombre : <b>' . $row->concesionario . '</b>';
-        return $html;
-    }
-
+    
     function _linkImprimir($value, $row) {
-        $html = '';
+        $html= '<a href="' . site_url('patente_regional/informacion_concesionPatentes/' . $row->id_concesion_minera) . ' ">
+                        <center> Ver Informacion
+                        </center>
+                     </a>';
         //verifica si una concesion tiene resolucion
         if (empty($row->fecha_resolucion) && strtolower($row->tipo_concesion) === 'cuadricula') {
             $jQuery = '  <script type="text/javascript">
@@ -649,22 +488,17 @@ class Patente_regional extends CI_Controller {
                                                });
                         </script>
                     ';
-            $titulo = 'NO TIENE FECHA DE RESOLUCION';
+            $titulo = 'NO TIENE FECHA DE RESOLUCION!, ';
             $error = 'No es posible emitir el formulario de pago de patentes';
             $botonRegistrar = '<br /><button class="button" id="link-' . $row->id_concesion_minera . '">Registrar resolucion</button>';
-            $html.= mensaje_error($titulo, $error) . $botonRegistrar . $jQuery;
+            //$html.= mensaje($titulo, $error,'info') . $botonRegistrar . $jQuery;
         } elseif (strtolower($row->estado_concesion) == 'vigente') {
-            // si es vigente permite imprimir
-            $html = '<a href="' . site_url('patente_regional/patentes_formularioDePagoDePatentes/' . $row->id_concesion_minera) . ' ">
-                        <center><img src="' . base_url('estilo/images/imprimir.png') . '" title="Imprimir formulario de pago de patentes" alt="Imprimir formulario pago de patentes"/>
-                        </center>
-                     </a>';
+            // si es vigente permite imprimir            
             $html.= '<a href="' . site_url('patente_regional/patentes_controlarPagoDePatentes/' . $row->id_concesion_minera) . ' ">
-                        <center> Realizar pago
+                        <center> <center><img src="' . base_url('estilo/images/imprimir.png') . '" title="Imprimir formulario de pago de patentes" alt="Imprimir formulario pago de patentes"/>
                         </center>
                      </a>';
-        }
-
+        }        
         return $html;
     }
 
@@ -703,7 +537,7 @@ class Patente_regional extends CI_Controller {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //- Cambiar Contraseña ////////////////////////////////////////////////////////////////////////////////////
+    //- funciones comunes ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     function usuario() {
         $this->load->library('funciones_comunes');
@@ -716,6 +550,16 @@ class Patente_regional extends CI_Controller {
         $this->load->library('funciones_comunes');
         $mensaje = new Funciones_comunes();
         $output = $mensaje->mensaje();
+        $this->_vista_principal($output);
+    }
+    
+    function informacion_concesionPatentes($id_concesion_minera) {        
+        $funcionesComunes = new funciones_comunes();
+        $enviarContenido['contenido']=array('Datos de Concesion'=>$funcionesComunes->informacion_concesionMinera($id_concesion_minera),
+                                            'Datos de Patentes'=>$funcionesComunes->informacion_patentes($id_concesion_minera)
+                                            );
+        $output->output = boton('volver').$this->load->view('vista_pestana.php',$enviarContenido, TRUE);
+        $output->titulo = 'INFORMACION CONCESION MINERA';
         $this->_vista_principal($output);
     }
 

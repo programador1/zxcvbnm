@@ -12,7 +12,7 @@
                     </select>
                 </td>
                 <td>
-                    <button type="button" id="nueva_persona">Adicionar Nuevo</button>
+                    <button type="button" id="nueva_persona" class="button">Adicionar Nuevo</button>
                 </td>
             </tr>
         </table>        
@@ -56,7 +56,6 @@
             }
         });
         jQuery(".emitir_formulario")
-                .button()
                 .click(function(e) {
                 jQuery("#gestion").attr('value',e.target.id);
                 jQuery("#importe").attr('value',e.target.name);
@@ -91,7 +90,6 @@
         });
         jQuery("#datos").html("");
         jQuery("#nueva_persona")
-                .button()
                 .click(function() {
             jQuery.post('<?php echo site_url("patente_regional/patentes_encontrarPersona"); ?>', {}, function(datos) {
                 jQuery("div#datos").html(datos);
