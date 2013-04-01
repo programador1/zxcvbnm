@@ -6,7 +6,8 @@ if (!defined('BASEPATH'))
 class Informatica extends CI_Controller {
 
     function __construct() {
-        parent::__construct();        
+        parent::__construct();
+        $this->load->library('funciones_comunes');
         $this->load->model('modelo_informatica', '', TRUE);
     }
 
@@ -21,40 +22,22 @@ class Informatica extends CI_Controller {
 //- Funciones que muestra la informacion informacion de las concesiones con la opciones de ver datos, editar, eliminar
 //=======================================================================================================================
     function informacion_concesion() {
-        $crud = null;
+        //$crud = null;
         $crud = new grocery_CRUD();
         $crud->order_by('estado_concesion','desc');
         $crud->set_table('vista_concesion_minera');
         $crud->set_primary_key('id_concesion_minera', 'vista_concesion_minera');
         $crud->set_subject('Patentes');
         $crud->columns('numero_formulario', 'padron_nacional', 'nombre_concesion','concesionario');
-        $crud->callback_column('nombre_concesion', array($this, '_concesion'));
+        $crud->callback_column('nombre_concesion', array($this, '_concesion'));        
         $crud->display_as('numero_formulario', 'Nro Formulario Inscripcion')
                 ->display_as('padron_nacional', 'Nro Padron Nacional')
                 ->display_as('nombre_concesion', 'Concesion Minera');
-        $crud->unset_fields('id_concesion_minera','id_numins');
-        //$crud->add_action('Editar Concesion', '', 'informatica/editar_concesion/edit', 'edit-icon');
-             $crud->add_action('Eliminar Concesion', '', 'informatica/eliminar_concesion/edit', 'delete-icon')
-                ->add_action('Ver mas Informacion', base_url('estilo/images/mas_informacion.png'), 'informatica/informacion_patentes');
-        $crud->set_primary_key('id_regional', 'regional');
-        $crud->set_relation('id_regional', 'regional', 'nombre_regional');
-        $crud->field_type('unidad', 'enum', array('CUADRICULA', 'HAS', 'M2'))
-                //->field_type('departamento', 'enum', array('LA PAZ', 'ORURO', 'POTOSI', 'COCHABAMBA', 'TARIJA', 'SUCRE', 'SANTA CRUZ', 'BENI', 'PANDO'))
-                ->field_type('fecha_inscripcion', 'date')
-                ->field_type('fecha_gaceta', 'date')
-                ->field_type('fecha_resolucion', 'date')
-                ->field_type('fecha_plano', 'date')
-                ->field_type('fecha_extincion', 'date')
-                ->field_type('estado_concesion', 'enum', array('VIGENTE', 'EXTINTO', 'TRAMITE'))
-                ->field_type('tipo_concesion', 'enum', array('CUADRICULA', 'PERTENENCIA'));
         
-
-        $crud->unset_add()
-                ->unset_delete()
-                ->unset_print()
-                ->unset_export()
-                //->unset_edit()
-                ;
+        $crud->add_action('Editar Concesion', '', 'informatica/editar_concesion/edit', 'edit-icon')
+             ->add_action('Eliminar Concesion', '', 'informatica/eliminar_concesion/edit', 'delete-icon')
+             ->add_action('Ver mas Informacion', base_url('estilo/images/mas_informacion.png'), 'informatica/informacion_concesionPatentes');
+        $crud->unset_operations();
 
         $output = $crud->render();
         $output->titulo = 'CONCESIONES MINERAS';
@@ -91,8 +74,10 @@ class Informatica extends CI_Controller {
             $output->titulo = 'CONCESIONES MINERAS';
             $this->_vista_principal($output);
         } else {
-            $crud = null;
-            $this->informacion_concesion();
+            unset($crud);
+            unset($output);
+            //$this->informacion_concesion();
+            redirect('/informatica/informacion_concesion/', 'refresh');
         }
     }
     
@@ -100,11 +85,16 @@ class Informatica extends CI_Controller {
         $crud = new grocery_CRUD();
         $crud->set_table('concesion_minera');
         $crud->set_primary_key('id_concesion_minera', 'concesion_minera');
-        $crud->set_subject('Concesion Minera');
+        $crud->set_subject('Patentes');
+        $crud->columns('numero_formulario', 'padron_nacional', 'nombre_concesion','concesionario');
+        $crud->callback_column('nombre_concesion', array($this, '_concesion'));
         $crud->display_as('numero_formulario', 'Nro Formulario Inscripcion')
                 ->display_as('padron_nacional', 'Nro Padron Nacional')
                 ->display_as('nombre_concesion', 'Concesion Minera');
         $crud->unset_fields('id_concesion_minera','id_numins');
+        //$crud->add_action('Editar Concesion', '', 'informatica/editar_concesion/edit', 'edit-icon');
+             $crud->add_action('Eliminar Concesion', '', 'informatica/eliminar_concesion/edit', 'delete-icon')
+                ->add_action('Ver mas Informacion', base_url('estilo/images/mas_informacion.png'), 'informatica/informacion_patentes');
         $crud->set_primary_key('id_regional', 'regional');
         $crud->set_relation('id_regional', 'regional', 'nombre_regional');
         $crud->field_type('unidad', 'enum', array('CUADRICULA', 'HAS', 'M2'))
@@ -117,11 +107,11 @@ class Informatica extends CI_Controller {
                 ->field_type('estado_concesion', 'enum', array('VIGENTE', 'EXTINTO', 'TRAMITE'))
                 ->field_type('tipo_concesion', 'enum', array('CUADRICULA', 'PERTENENCIA'));
 
-        $crud->unset_add()
+         $crud->unset_add()
                 ->unset_delete()
                 ->unset_print()
                 ->unset_export();
-
+         
         $estado = $crud->getState();
         if ($estado === 'edit' || $estado === 'update_validation') {
             $output = $crud->render();
@@ -131,41 +121,6 @@ class Informatica extends CI_Controller {
             $crud = null;
             $this->informacion_concesion();
         }
-
-
-    }
-
-    function informacion_patentes($id_concesion_minera) {
-        $this->db->where('id_concesion_minera', $id_concesion_minera);
-        $datosConcesionMinera = $this->db->get('concesion_minera')->row();
-
-        $crud = new grocery_CRUD();
-        $crud->where('id_concesion_minera', $id_concesion_minera);
-        $crud->where('estado_formulario_pago_patente', 'PAGADO');
-        $crud->order_by('fecha_registro_sistema', 'desc');
-        $crud->set_table('patentes');
-        $crud->set_primary_key('id_patentes', 'patentes');
-        $crud->set_subject('Patentes');
-        $crud->set_primary_key('id_concesion_minera', 'concesion_minera');
-        //$crud->set_relation('id_concesion_minera', 'concesion_minera', 'numero_formulario');
-
-        $crud->columns('importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono', 'observaciones');
-        $crud->fields('importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono', 'observaciones');
-        $crud->required_fields('importe_gestion', 'importe', 'nro_formulario_pago_patente', 'banco', 'fecha_pago', 'fecha_abono');
-        $crud->display_as('importe_gestion', 'Gestion')
-                ->display_as('nro_formulario_pago_patente', 'Nro Boleta');
-        $crud->field_type('fecha_pago', 'date')
-                ->field_type('fecha_abono', 'date');
-        $crud->unset_operations();
-
-        $output = $crud->render();
-        //$output->datosAdicionalesSuperior = $this->load->view('informacion_concesion_minera.php', $datosConcesionMinera, TRUE);
-        $enviarContenido['contenido'] = array('Datos de Concesion' => $this->load->view('informacion_concesion_minera.php', $datosConcesionMinera, TRUE),
-            'Datos de Patentes' => $this->load->view('vista_grocerycrud.php', $output, TRUE));
-
-        $output->output = boton('volver').$this->load->view('vista_pestana.php', $enviarContenido, TRUE);
-        $output->titulo = 'CONCESIONES MINERAS';
-        $this->_vista_principal($output);
     }
 
     // FUNCIONES DE callback_column -------------------------------------------------------------------------	
@@ -460,6 +415,15 @@ class Informatica extends CI_Controller {
 
         $output = $crud->render();
         $output->titulo = 'CONCESIONES MINERAS';
+        $this->_vista_principal($output);
+    }
+        function informacion_concesionPatentes($id_concesion_minera) {        
+        $funcionesComunes = new funciones_comunes();
+        $enviarContenido['contenido']=array('Datos de Concesion'=>$funcionesComunes->informacion_concesionMinera($id_concesion_minera),
+                                            'Datos de Patentes'=>$funcionesComunes->informacion_patentes($id_concesion_minera)
+                                            );
+        $output->output = boton('volver').$this->load->view('vista_pestana.php',$enviarContenido, TRUE);
+        $output->titulo = 'BUSCAR CONCESIONES MINERAS';
         $this->_vista_principal($output);
     }
 }
